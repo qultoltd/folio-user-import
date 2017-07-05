@@ -8,15 +8,15 @@ e.g. npm config set folio-bulk-user-import:FOLIO_PORT 9130
 Every setting has a default fallback value.
 
 ### FOLIO configuration options
-    FOLIO_HOST Hostname of OKAPI
-    FOLIO_PORT Port of OKAPI
-    FOLIO_PROTOCOL Protocol of OKAPI
-    FOLIO_TENANT Tenant id
-    FOLIO_USERNAME Username for authentication
-    FOLIO_PASSWORD Password for username
-    FOLIO_FILENAME File name with user data
-    FOLIO_PAGESIZE Number of users to search for in one query
-    FOLIO_LOGFILE Log file for user import
+    FOLIO_HOST - Hostname of OKAPI
+    FOLIO_PORT - Port of OKAPI
+    FOLIO_PROTOCOL - Protocol of OKAPI
+    FOLIO_TENANT - Tenant id
+    FOLIO_USERNAME - Username for authentication
+    FOLIO_PASSWORD - Password for username
+    FOLIO_FILENAME - File name with user data
+    FOLIO_PAGESIZE - Number of users to search for in one query
+    FOLIO_LOGFILE - Log file for user import
 
 ## Usage
 
