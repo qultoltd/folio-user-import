@@ -2,8 +2,10 @@
 
 ## Configuration
 
-You can set the configuration values with npm config 
-e.g. `npm config set folio-bulk-user-import:FOLIO_PORT 9130`
+You have more options to set the configuration values in order of preference:
+1. Create a config.json file and add the file path as parameter for the module.
+2. Define configurations as environment variables.
+3. Use pre-defined fallback values.
 
 Every setting has a default fallback value.
 

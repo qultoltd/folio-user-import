@@ -2,12 +2,6 @@
 
 var http = require('http');
 
-/**
- * Tasks:
- * - handle errors
- * - testing
- */
-
 /** File management */
 var fs = require('fs');
 
@@ -41,12 +35,6 @@ var preferredContactTypes = {
     'phone': '004',
     'mobile': '005'
 }
-/*
-var numberOfUsers = 0;
-var numberOfNewUsers = 0;
-var numberOfFailedNewUsers = 0;
-var numberOfExistingUsers = 0;
-var numberOfFailedExistingUsers = 0;*/
 
 /** Logging library */
 var log4js = require('log4js');
@@ -60,26 +48,22 @@ var logger = log4js.getLogger('user-import');
 logger.setLevel('DEBUG');
 
 function initConfig(configUrl) {
-    var config;
     if(configUrl !== undefined) {
         try {
-            config = require(configUrl);
+            var config = require(configUrl);
+            folioHost = config.FOLIO_HOST || folioHost;
+            folioPort = config.FOLIO_PORT || folioPort;
+            folioProtocol = config.FOLIO_PROTOCOL || folioProtocol;
+            folioTenant = config.FOLIO_TENANT || folioTenant;
+            folioUsername = config.FOLIO_USERNAME || folioUsername;
+            folioPassword = config.FOLIO_PASSWORD || folioPassword;
+            folioFilename = config.FOLIO_FILENAME || folioFilename;
+            folioPageSize = config.FOLIO_PAGESIZE || folioPageSize;
+            folioLogFile = config.FOLIO_LOGFILE || folioLogFile;
         } catch (e) {
-            logger.error('Failed to load config file.', e.message);
-            config = {};
+            logger.warn('Failed to load config file.', e.message);
         }
-    } else {
-        config = {};
     }
-    folioHost = config.FOLIO_HOST || process.env.FOLIO_HOST || 'localhost';
-    folioPort = config.FOLIO_PORT || process.env.FOLIO_PORT || '9130';
-    folioProtocol = config.FOLIO_PROTOCOL || process.env.FOLIO_PROTOCOL || 'http:';
-    folioTenant = config.FOLIO_TENANT || process.env.FOLIO_TENANT || 'diku';
-    folioUsername = config.FOLIO_USERNAME || process.env.FOLIO_USERNAME || 'diku_admin';
-    folioPassword = config.FOLIO_PASSWORD || process.env.FOLIO_PASSWORD || 'admin';
-    folioFilename = config.FOLIO_FILENAME || process.env.FOLIO_FILENAME || 'etc/users.json';
-    folioPageSize = config.FOLIO_PAGESIZE || process.env.FOLIO_PAGESIZE ||  '10';
-    folioLogFile = config.FOLIO_LOGFILE || process.env.FOLIO_LOGFILE || 'logs/user-import.log';
 }
 
 /**
@@ -122,6 +106,9 @@ function startImport(configUrl) {
         logger.trace('Logged in to FOLIO.');
         authToken = loginToken;
         getAddressTypes();
+    }).on('error', (e) => {
+        logger.error('Failed to request log in to FOLIO.', e.message);
+        process.exit();
     });
 
     req.write(json);
@@ -150,7 +137,6 @@ function readUserData() {
  */
 function processUsers(usersDataString) {
     var data = JSON.parse(usersDataString);
-    //numberOfUsers = data.length;
     var tempUserMap = {};
     
     data.forEach(function(user) {
@@ -212,6 +198,8 @@ function searchUsers(userMap) {
                 logger.error('Failed to list ', e.message);
             }
         });
+    }).on('error', (e) => {
+        logger.error('Failed to search users.', e.message);
     });
 
 }
@@ -276,15 +264,14 @@ function updateUser(user) {
         response.on('end', () => {
             try {
                 if(response.statusCode > 299 || response.statusCode < 200) {
-                    logger.debug('Failed to update user with username: ' + user.username , userUpdateResult);
-                    //numberOfExistingUsers = numberOfExistingUsers + 1;
-                /*} else {
-                    numberOfFailedExistingUsers = numberOfFailedExistingUsers + 1;*/
+                    logger.warn('Failed to update user with username: ' + user.username , userUpdateResult);
                 }
             } catch (e) {
                 logger.error('Failed to update user with username: ' + user.username + ' Reason: ', e.message);
             }
         });
+    }).on('error', (e) => {
+        logger.error('Failed to update user with username: ' + user.username, e.message);
     });
 
     req.write(json);
@@ -334,15 +321,15 @@ function createUser(user) {
             try {
                 if(response.statusCode > 299 || response.statusCode < 200) {
                     logger.warn('Failed to create user with name: ' + user.username, userCreateResult);
-                    //numberOfFailedNewUsers = numberOfFailedNewUsers + 1;
                 } else {
-                    //numberOfNewUsers = numberOfNewUsers + 1;
                     createCredentials(user);
                 }
             } catch (e) {
                 logger.error(e.message);
             }
         });
+    }).on('error', (e) => {
+        logger.error('Failed to create user with username: ' + user.username, e.message);
     });
 
     req.write(json);
@@ -391,6 +378,8 @@ function createCredentials(user) {
                 logger.error('Failed to save credentials for user with name: ' + user.username + ' Reason: ', e.message);
             }
         });
+    }).on('error', (e) => {
+        logger.error('Failed to add user credentials for user: ' + user.username, e.message);
     });
 
     req.write(json);
@@ -435,6 +424,8 @@ function getPatronGroups() {
             }
             readUserData();
         });
+    }).on('error', (e) => {
+        logger.error('Failed to list parton groups.', e.message);
     });
 
 }
@@ -478,28 +469,11 @@ function getAddressTypes() {
             }
             getPatronGroups();
         });
+    }).on('error', (e) => {
+        logger.error('Failed to list address types.', e.message);
     });
 
 }
-
-/*
-function logStatistics() {
-    logger.info('Processing users has finished.');
-    logger.info('Total number of users processed: ', numberOfUsers);
-    if(numberOfNewUsers > 0) {
-        logger.info('Created ' + numberOfNewUsers + ' new user(s).');
-    }
-    if(numberOfFailedNewUsers > 0) {
-        logger.info('Failed to create new users for ' + numberOfFailedNewUsers + ' user(s).');
-    }
-    if(numberOfExistingUsers > 0) {
-        logger.info('Updated ' + numberOfExistingUsers + ' user(s) successfully.');
-    }
-    if(numberOfFailedExistingUsers > 0) {
-        logger.info('Failed to update ' + numberOfFailedExistingUsers + ' user(s).');
-    }
-}
-*/
 
 /*
 function createPermissions() {
