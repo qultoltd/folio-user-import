@@ -1,6 +1,6 @@
 {
   "name": "folio-user-import",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "FOLIO bulk user import script",
   "main": "src/index.js",
   "config": {

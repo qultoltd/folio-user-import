@@ -3,7 +3,7 @@
 ## Configuration
 
 You can set the configuration values with npm config 
-e.g. npm config set folio-bulk-user-import:FOLIO_PORT 9130
+e.g. `npm config set folio-bulk-user-import:FOLIO_PORT 9130`
 
 Every setting has a default fallback value.
 
@@ -28,7 +28,8 @@ Use module in a script
 optional parameter: user data file name
 
 Run code locally
-    cd into directory
+
+    cd folio-user-import
     npm install
     npm start
 
@@ -38,7 +39,7 @@ Run code locally
 2. Get list of address types.
 3. Get list of patron groups.
 4. Read user data from the configured JSON file.
-5. Query FOLIO if users already exist in the system (in batch of FOLIO_PAGESIZE number of users)
+5. Query FOLIO if users already exist in the system (in batch of `FOLIO_PAGESIZE` number of users)
 6. Decide by the result of the query if the current user have to be inserted or updated in the system.
 7. Update existing users.
 8. Create non-existing users.
