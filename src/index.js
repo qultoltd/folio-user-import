@@ -59,17 +59,38 @@ var logger = log4js.getLogger('user-import');
 /** Available levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL */
 logger.setLevel('DEBUG');
 
+function initConfig(configUrl) {
+    var config;
+    if(configUrl !== undefined) {
+        try {
+            config = require(configUrl);
+        } catch (e) {
+            logger.error('Failed to load config file.', e.message);
+            config = {};
+        }
+    } else {
+        config = {};
+    }
+    folioHost = config.FOLIO_HOST || process.env.FOLIO_HOST || 'localhost';
+    folioPort = config.FOLIO_PORT || process.env.FOLIO_PORT || '9130';
+    folioProtocol = config.FOLIO_PROTOCOL || process.env.FOLIO_PROTOCOL || 'http:';
+    folioTenant = config.FOLIO_TENANT || process.env.FOLIO_TENANT || 'diku';
+    folioUsername = config.FOLIO_USERNAME || process.env.FOLIO_USERNAME || 'diku_admin';
+    folioPassword = config.FOLIO_PASSWORD || process.env.FOLIO_PASSWORD || 'admin';
+    folioFilename = config.FOLIO_FILENAME || process.env.FOLIO_FILENAME || 'etc/users.json';
+    folioPageSize = config.FOLIO_PAGESIZE || process.env.FOLIO_PAGESIZE ||  '10';
+    folioLogFile = config.FOLIO_LOGFILE || process.env.FOLIO_LOGFILE || 'logs/user-import.log';
+}
+
 /**
  * Starts import process with login.
  * Calls listing of address types.
  * 
- * @param userDataFile - optional parameter, filename for user data
+ * @param configUrl - optional parameter, filename for user data
  */
-function startImport(userDataFile) {
-    logger.info('User file name: ', userDataFile);
-    if(userDataFile !== undefined) {
-        folioFilename = userDataFile || folioFilename;
-    }
+function startImport(configUrl) {
+    logger.trace('Config file name: ', configUrl);
+    initConfig(configUrl);
     var authOptions = {
         method: 'POST',
         protocol: folioProtocol,
@@ -527,6 +548,6 @@ function createPermissions() {
 }
 */
 
-module.exports = function(userDataFile) {
-    return startImport(userDataFile);
+module.exports = function(configUrl) {
+    return startImport(configUrl);
 }

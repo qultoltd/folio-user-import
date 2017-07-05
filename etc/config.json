@@ -1,0 +1,11 @@
+{
+    "FOLIO_HOST": "localhost",
+    "FOLIO_PORT": "9130",
+    "FOLIO_PROTOCOL": "http:",
+    "FOLIO_TENANT": "diku",
+    "FOLIO_USERNAME": "diku_admin",
+    "FOLIO_PASSWORD": "admin",
+    "FOLIO_FILENAME": "etc/users.json",
+    "FOLIO_PAGESIZE": "10",
+    "FOLIO_LOGFILE": "logs/user-import.log"
+}

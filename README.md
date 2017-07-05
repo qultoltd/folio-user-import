@@ -22,10 +22,10 @@ Every setting has a default fallback value.
 
 Use module in a script
 
-    var bulk-import = require('folio-bulk-user-import');
-    bulk-import();
+    var folioUserImport = require('folio-user-import');
+    folioUserImport();
 
-optional parameter: user data file name
+optional parameter: configuration JSON file name
 
 Run code locally
 
