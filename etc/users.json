@@ -1,13 +1,13 @@
 [{
     "username": "test",
     "active": "true"
-},
-{
+  },
+  {
     "username": "testuser",
     "barcode": "123654789",
     "active": "true"
-},
-{
+  },
+  {
     "username": "somebody",
     "externalSystemId": "test",
     "barcode": "1657463",
@@ -15,30 +15,29 @@
     "type": "patron",
     "patronGroup": "other",
     "personal": {
-        "lastName": "Test",
-        "firstName": "Somebody",
-        "middleName": "",
-        "email": "test@email.com",
-        "phone": "123456789",
-        "mobilePhone": "163468723",
-        "dateOfBirth": "2000-01-01",
-        "addresses": [
-            {
-                "id": "",
-                "countryId": "",
-                "addressLine1": "",
-                "addressLine2": "",
-                "city": "",
-                "region": "",
-                "postalCode": "",
-                "addressTypeId": "primary",
-                "primaryAddress": "true"
-            }
-        ],
-        "preferredContactTypeId": "email"
+      "lastName": "Test",
+      "firstName": "Somebody",
+      "middleName": "",
+      "email": "test@email.com",
+      "phone": "123456789",
+      "mobilePhone": "163468723",
+      "dateOfBirth": "2000-01-01",
+      "addresses": [{
+        "id": "",
+        "countryId": "",
+        "addressLine1": "",
+        "addressLine2": "",
+        "city": "",
+        "region": "",
+        "postalCode": "",
+        "addressTypeId": "primary",
+        "primaryAddress": "true"
+      }],
+      "preferredContactTypeId": "email"
     },
     "enrollmentDate": "2000-01-01",
     "expirationDate": "2000-01-01",
     "createdDate": "2000-01-01",
     "updatedDate": "2000-01-01"
-}]
+  }
+]
