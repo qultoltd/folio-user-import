@@ -379,8 +379,6 @@ function createCredentials(user) {
       try {
         if (response.statusCode > 299 || response.statusCode < 200) {
           logger.warn('Failed to create user credentials for user with name: ' + user.username, userCreateResult);
-          /*} else {
-              createPermissions(user);*/
         }
       } catch (e) {
         logger.error('Failed to save credentials for user with name: ' + user.username + ' Reason: ', e.message);
@@ -486,53 +484,6 @@ function getAddressTypes() {
   });
 
 }
-
-/*
-function createPermissions() {
-    var createPermissions = {
-        method: 'POST',
-        protocol: folioProtocol,
-        host: folioHost,
-        port: folioPort,
-        path: '/perms/permissions',
-        headers: {
-            'X-Okapi-Tenant': folioTenant,
-            'Content-type': 'application/json',
-            'Accept': 'text/plain',
-            'x-okapi-token': authToken
-        }
-    }
-
-    var json = JSON.stringify({
-        'permissionName': '',
-        'displayName': '',
-        'id': '',
-        'description': '',
-        'tags': [''],
-        'subPermissions': [''],
-        'mutable': 'false',
-        'visible': 'false'
-    });
-
-    var req = http.request(createPermissions, function(response) {
-        logger.info('User permissions creation status: ' + user.username, response.statusCode);
-        let userCreateResult = '';
-        response.on('data', (chunk) => { userCreateResult += chunk; });
-        response.on('end', () => {
-            try {
-                if(response.statusCode > 299 || response.statusCode < 200) {
-                    logger.warn('Failed to create user permissions for user with name: ' + user.username, userCreateResult);
-                }
-            } catch (e) {
-                logger.error(e.message);
-            }
-        });
-    });
-
-    req.write(json);
-    req.end();
-}
-*/
 
 module.exports = function (configUrl) {
   return startImport(configUrl);
