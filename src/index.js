@@ -77,6 +77,10 @@ function initConfig(configUrl) {
 function startImport(configUrl) {
   logger.trace('Config file name: ', configUrl);
   initConfig(configUrl);
+  login(getAddressTypes)
+}
+
+function login(callback, callbackParam) {
   var authOptions = {
     method: 'POST',
     protocol: folioProtocol,
@@ -107,7 +111,7 @@ function startImport(configUrl) {
     }
     logger.trace('Logged in to FOLIO.');
     authToken = loginToken;
-    getAddressTypes();
+    callback(callbackParam);
   }).on('error', (e) => {
     logger.error('Failed to request log in to FOLIO.', e.message);
     process.exit();
@@ -142,8 +146,8 @@ function processUsers(usersDataString) {
   var tempUserMap = {};
 
   data.forEach(function (user) {
-    logger.debug('User object: ', user);
-    tempUserMap[user.username] = user;
+    logger.trace('User object: ', user);
+    tempUserMap[user.externalSystemId] = user;
     if (Object.keys(tempUserMap).length == Number(folioPageSize)) {
       searchUsers(tempUserMap);
       tempUserMap = {};
@@ -158,27 +162,27 @@ function processUsers(usersDataString) {
 /**
  * Check if users exist in FOLIO.
  * 
- * @param userMap - the user objects with the username as key
+ * @param userMap - the user objects with the externalSystemId as key
  */
 function searchUsers(userMap) {
-  var queryPath = '/users?query=(';
-  var usernames = Object.keys(userMap);
-  for (var i = 0; i < usernames.length; i++) {
-    queryPath += 'username=%22' + usernames[i] + '%22';
-    if (i < usernames.length - 1) {
-      queryPath += '%20or%20';
+  var queryPath = '(';
+  var externalSystemIds = Object.keys(userMap);
+  for (var i = 0; i < externalSystemIds.length; i++) {
+    queryPath += 'externalSystemId="' + externalSystemIds[i] + '"';
+    if (i < externalSystemIds.length - 1) {
+      queryPath += ' or ';
     } else {
       queryPath += ')';
     }
   }
-  logger.debug('query path: ', queryPath);
+  logger.trace('query path: ', queryPath);
 
   var searchOptions = {
     method: 'GET',
     protocol: folioProtocol,
     host: folioHost,
     port: folioPort,
-    path: queryPath,
+    path: '/users?query=' + encodeURIComponent(queryPath),
     headers: {
       'X-Okapi-Tenant': folioTenant,
       'Content-type': 'application/json',
@@ -195,11 +199,17 @@ function searchUsers(userMap) {
     });
     response.on('end', () => {
       try {
-        const userSearchResult = JSON.parse(rawData);
-        logger.trace('Result of user pre check: ', userSearchResult);
-        importUsers(userMap, userSearchResult.users);
+        logger.info('Existing users: ', rawData);
+        logger.info('status: ', response.statusCode);
+        if(response.status < 200 || response.status > 299) {
+          login(searchUsers, userMap);
+        } else {
+          const userSearchResult = JSON.parse(rawData);
+          logger.trace('Result of user pre check: ', userSearchResult);
+          importUsers(userMap, userSearchResult.users);
+        }
       } catch (e) {
-        logger.error('Failed to list ', e.message);
+        logger.error('Failed to list existing users', e.message);
       }
     });
   }).on('error', (e) => {
@@ -211,17 +221,17 @@ function searchUsers(userMap) {
 /**
  * Iterate on existing users and decide if actual user should be created or updated.
  * 
- * @param userMap - map of users with username as key
+ * @param userMap - map of users with externalSystemId as key
  * @param existingUsers - list of existing users retrieved from the server
  */
 function importUsers(userMap, existingUsers) {
-  logger.info('existing users: ', existingUsers);
+  logger.trace('existing users: ', existingUsers);
   existingUsers.forEach(function (user) {
-    var userToUpdate = userMap[user.username];
+    var userToUpdate = userMap[user.externalSystemId];
     if (userToUpdate !== undefined) {
       userToUpdate.id = user.id;
       updateUser(userToUpdate);
-      delete userMap[user.username];
+      delete userMap[user.externalSystemId];
     }
   });
 
@@ -241,8 +251,17 @@ function updateUser(user) {
     user.patronGroup = patronGroups[user.patronGroup];
   }
 
-  if (user.personal !== undefined && user.personal.preferredContactTypeId !== undefined) {
-    user.personal.preferredContactTypeId = preferredContactTypes[user.personal.preferredContactTypeId];
+  if (user.personal !== undefined) {
+    if(user.personal.preferredContactTypeId !== undefined) {
+      user.personal.preferredContactTypeId = preferredContactTypes[user.personal.preferredContactTypeId];
+    }
+    if(user.personal.addresses !== undefined && user.personal.addresses.length > 0) {
+      user.personal.addresses.forEach(function(address) {
+        if(address.addressTypeId !== undefined) {
+          address.addressTypeId = addressTypes[address.addressTypeId];
+        }
+      });
+    }
   }
 
   var updateOptions = {
@@ -262,7 +281,7 @@ function updateUser(user) {
   var json = JSON.stringify(user);
 
   var req = http.request(updateOptions, function (response) {
-    logger.info('User update status: ' + user.username, response.statusCode);
+    logger.info('User update status: ' + user.externalSystemId, response.statusCode);
     let userUpdateResult = '';
     response.on('data', (chunk) => {
       userUpdateResult += chunk;
@@ -270,14 +289,14 @@ function updateUser(user) {
     response.on('end', () => {
       try {
         if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to update user with username: ' + user.username, userUpdateResult);
+          logger.warn('Failed to update user with externalSystemId: ' + user.externalSystemId, userUpdateResult);
         }
       } catch (e) {
-        logger.error('Failed to update user with username: ' + user.username + ' Reason: ', e.message);
+        logger.error('Failed to update user with externalSystemId: ' + user.externalSystemId + ' Reason: ', e.message);
       }
     });
   }).on('error', (e) => {
-    logger.error('Failed to update user with username: ' + user.username, e.message);
+    logger.error('Failed to update user with externalSystemId: ' + user.externalSystemId, e.message);
   });
 
   req.write(json);
@@ -288,7 +307,7 @@ function updateUser(user) {
 /**
  * Create a new user.
  * 
- * @param user - the user object to create. If the user id is not specified, the id will be the username for now.
+ * @param user - the user object to create. If the user id is not specified, the id will be the externalSystemId for now.
  */
 function createUser(user) {
   if (user.id === undefined) {
@@ -299,8 +318,17 @@ function createUser(user) {
     user.patronGroup = patronGroups[user.patronGroup];
   }
 
-  if (user.personal !== undefined && user.personal.preferredContactTypeId !== undefined) {
-    user.personal.preferredContactTypeId = preferredContactTypes[user.personal.preferredContactTypeId];
+  if (user.personal !== undefined) {
+    if(user.personal.preferredContactTypeId !== undefined) {
+      user.personal.preferredContactTypeId = preferredContactTypes[user.personal.preferredContactTypeId];
+    }
+    if(user.personal.addresses !== undefined && user.personal.addresses.length > 0) {
+      user.personal.addresses.forEach(function(address) {
+        if(address.addressTypeId !== undefined) {
+          address.addressTypeId = addressTypes[address.addressTypeId];
+        }
+      });
+    }
   }
 
   var createOptions = {
@@ -320,7 +348,7 @@ function createUser(user) {
   var json = JSON.stringify(user);
 
   var req = http.request(createOptions, function (response) {
-    logger.info('User create status: ' + user.username, response.statusCode);
+    logger.info('User create status: ' + user.externalSystemId, response.statusCode);
     let userCreateResult = '';
     response.on('data', (chunk) => {
       userCreateResult += chunk;
@@ -328,7 +356,7 @@ function createUser(user) {
     response.on('end', () => {
       try {
         if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to create user with name: ' + user.username, userCreateResult);
+          logger.warn('Failed to create user with name: ' + user.externalSystemId, userCreateResult);
         } else {
           createCredentials(user);
         }
@@ -337,7 +365,7 @@ function createUser(user) {
       }
     });
   }).on('error', (e) => {
-    logger.error('Failed to create user with username: ' + user.username, e.message);
+    logger.error('Failed to create user with externalSystemId: ' + user.externalSystemId, e.message);
   });
 
   req.write(json);
@@ -468,11 +496,12 @@ function getAddressTypes() {
         if (response.statusCode > 299 || response.statusCode < 200) {
           logger.warn('Failed to list address types.', addressResult);
         } else {
-          logger.trace('Address types: ', addressResult);
-          var addressTypeList = JSON.parse(addressResult);
+          logger.debug('Address types: ', addressResult);
+          var addressTypeList = JSON.parse(addressResult).addressTypes;
           addressTypeList.forEach(function (addressType) {
             addressTypes[addressType.addressType] = addressType.id;
           });
+          logger.debug('Address types are: ', addressTypes);
         }
       } catch (e) {
         logger.error('Failed to get address type list. Reason: ', e.message);

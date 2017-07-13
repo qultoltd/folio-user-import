@@ -1,19 +1,20 @@
 [{
-    "username": "test",
+    "externalSystemId": "asd",
+    "username": "test_test",
     "active": "true"
   },
   {
-    "username": "testuser",
-    "barcode": "123654789",
+    "externalSystemId": "bsd",
+    "username": "test_user",
     "active": "true"
   },
   {
-    "username": "somebody",
+    "username": "test_somebody",
     "externalSystemId": "test",
     "barcode": "1657463",
     "active": "true",
     "type": "patron",
-    "patronGroup": "other",
+    "patronGroup": "staff",
     "personal": {
       "lastName": "Test",
       "firstName": "Somebody",
@@ -23,7 +24,6 @@
       "mobilePhone": "163468723",
       "dateOfBirth": "2000-01-01",
       "addresses": [{
-        "id": "",
         "countryId": "",
         "addressLine1": "",
         "addressLine2": "",
@@ -39,5 +39,666 @@
     "expirationDate": "2000-01-01",
     "createdDate": "2000-01-01",
     "updatedDate": "2000-01-01"
+  },
+  {
+    "externalSystemId": 14,
+    "personal": {
+      "firstName": "Amy",
+      "lastName": "Cabble",
+      "email": "atestnoird@drupal.org",
+      "phone": "63-(443)992-6454",
+      "mobilePhone": "86-(713)580-3856",
+      "dateOfBirth": "1976-05-01",
+      "preferredContactTypeId": "phone"
+    },
+    "barcode": "04-844-4753",
+    "username": "test_noir",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 15,
+    "personal": {
+      "firstName": "Viola",
+      "lastName": "Bramich",
+      "email": "vtestcornaue@cocolog-nifty.com",
+      "phone": "233-(988)291-9888",
+      "mobilePhone": "86-(213)389-8817",
+      "dateOfBirth": "1966-12-01",
+      "preferredContactTypeId": "email",
+      "addresses": [{
+        "addressLine1": "67 Stang Park",
+        "city": "Mesa",
+        "region": "Arizona",
+        "postalCode": "85210",
+        "addressTypeId": "Returns",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "78-270-2196",
+    "username": "test_cornau",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "faculty"
+  },
+  {
+    "externalSystemId": 16,
+    "personal": {
+      "firstName": "Fayette",
+      "lastName": "Rubinovici",
+      "email": "ftestcullaghf@amazon.co.jp",
+      "phone": "7-(890)677-2148",
+      "mobilePhone": "55-(994)266-9735",
+      "dateOfBirth": "1956-08-25",
+      "preferredContactTypeId": "email",
+      "addresses": [{
+        "addressLine1": "5 Ohio Lane",
+        "city": "Columbia",
+        "region": "South Carolina",
+        "postalCode": "29240",
+        "addressTypeId": "Returns",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "18-862-1391",
+    "username": "test_cullagh",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "graduate"
+  },
+  {
+    "externalSystemId": 17,
+    "personal": {
+      "firstName": "Laura",
+      "lastName": "Habbeshaw",
+      "email": "lteststegelg@geocities.com",
+      "phone": "49-(580)264-4795",
+      "mobilePhone": "62-(472)953-9394",
+      "dateOfBirth": "1985-08-06",
+      "preferredContactTypeId": "phone",
+      "addresses": [{
+        "addressLine1": "762 Hermina Trail",
+        "city": "Rochester",
+        "region": "New York",
+        "postalCode": "14604",
+        "addressTypeId": "Payment",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "56-965-7891",
+    "username": "test_stegel",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "faculty"
+  },
+  {
+    "externalSystemId": 18,
+    "personal": {
+      "firstName": "Burt",
+      "lastName": "Castaner",
+      "email": "btestjirakh@cdbaby.com",
+      "phone": "62-(539)367-5729",
+      "mobilePhone": "7-(582)241-4862",
+      "dateOfBirth": "1977-04-01",
+      "preferredContactTypeId": "mail"
+    },
+    "barcode": "02-821-7986",
+    "username": "test_jirak",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "faculty"
+  },
+  {
+    "externalSystemId": 19,
+    "personal": {
+      "firstName": "Aurea",
+      "lastName": "Pinkstone",
+      "email": "atestfeatherstonhalghi@loc.gov",
+      "phone": "967-(846)730-9191",
+      "mobilePhone": "351-(774)625-4362",
+      "dateOfBirth": "1959-12-13",
+      "preferredContactTypeId": "text",
+      "addresses": [{
+        "addressLine1": "9 Morningstar Crossing",
+        "city": "El Paso",
+        "region": "Texas",
+        "postalCode": "88514",
+        "addressTypeId": "Work",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "35-257-1917",
+    "username": "test_featherstonhalgh",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "graduate"
+  },
+  {
+    "externalSystemId": 20,
+    "personal": {
+      "firstName": "Melitta",
+      "lastName": "Pruvost",
+      "email": "mtesthuntleyj@liveinternet.ru",
+      "phone": "63-(430)762-9891",
+      "mobilePhone": "86-(304)963-9870",
+      "dateOfBirth": "1998-11-07",
+      "preferredContactTypeId": "text",
+      "addresses": [{
+        "addressLine1": "91 Sutherland Way",
+        "city": "Seattle",
+        "region": "Washington",
+        "postalCode": "98166",
+        "addressTypeId": "Claim",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "03-946-2563",
+    "username": "test_huntley",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "faculty"
+  },
+  {
+    "externalSystemId": 21,
+    "personal": {
+      "firstName": "Lizabeth",
+      "lastName": "Besemer",
+      "email": "ltestmagranek@omniture.com",
+      "phone": "86-(750)764-9137",
+      "mobilePhone": "86-(418)990-3102",
+      "dateOfBirth": "1973-03-15",
+      "preferredContactTypeId": "text",
+      "addresses": [{
+        "addressLine1": "59198 Stang Lane",
+        "city": "Wichita Falls",
+        "region": "Texas",
+        "postalCode": "76310",
+        "addressTypeId": "Order",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "72-622-0010",
+    "username": "test_magrane",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 22,
+    "personal": {
+      "firstName": "Konstance",
+      "lastName": "Tarbett",
+      "email": "ktestbudcockl@fotki.com",
+      "phone": "1-(151)903-2652",
+      "mobilePhone": "46-(666)329-9772",
+      "dateOfBirth": "1955-10-17",
+      "preferredContactTypeId": "phone",
+      "addresses": [{
+        "addressLine1": "8026 Upham Lane",
+        "city": "Jacksonville",
+        "region": "Florida",
+        "postalCode": "32259",
+        "addressTypeId": "Payment",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "76-165-9942",
+    "username": "test_budcock",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 23,
+    "personal": {
+      "firstName": "Trish",
+      "lastName": "Fossord",
+      "email": "ttestoclerym@is.gd",
+      "phone": "1-(605)875-2263",
+      "mobilePhone": "7-(184)763-3564",
+      "dateOfBirth": "1982-01-18",
+      "preferredContactTypeId": "mobile"
+    },
+    "barcode": "53-442-5312",
+    "username": "test_oclery",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "staff"
+  },
+  {
+    "externalSystemId": 24,
+    "personal": {
+      "firstName": "Katy",
+      "lastName": "Rive",
+      "email": "ktestsoarsn@360.cn",
+      "phone": "51-(910)336-5747",
+      "mobilePhone": "598-(188)312-1527",
+      "dateOfBirth": "1950-12-04",
+      "preferredContactTypeId": "mail",
+      "addresses": [{
+        "addressLine1": "7 David Street",
+        "city": "Birmingham",
+        "region": "Alabama",
+        "postalCode": "35279",
+        "addressTypeId": "Work",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "34-326-7777",
+    "username": "test_soars",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 25,
+    "personal": {
+      "firstName": "Gerianne",
+      "lastName": "Trevarthen",
+      "email": "gtestlendeno@geocities.com",
+      "phone": "1-(513)621-1104",
+      "mobilePhone": "30-(206)446-4246",
+      "dateOfBirth": "1982-11-03",
+      "preferredContactTypeId": "email",
+      "addresses": [{
+        "addressLine1": "94 Manitowish Crossing",
+        "city": "Columbia",
+        "region": "South Carolina",
+        "postalCode": "29208",
+        "addressTypeId": "Returns",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "91-304-5444",
+    "username": "test_lenden",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "graduate"
+  },
+  {
+    "externalSystemId": 26,
+    "personal": {
+      "firstName": "Lexis",
+      "lastName": "Keyson",
+      "email": "ltestpoutressp@unblog.fr",
+      "phone": "86-(211)740-7515",
+      "mobilePhone": "670-(379)164-4136",
+      "dateOfBirth": "1982-10-31",
+      "preferredContactTypeId": "phone",
+      "addresses": [{
+        "addressLine1": "665 Dakota Drive",
+        "city": "Houston",
+        "region": "Texas",
+        "postalCode": "77223",
+        "addressTypeId": "Claim",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "88-761-2686",
+    "username": "test_poutress",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 27,
+    "personal": {
+      "firstName": "Ammamaria",
+      "lastName": "Turfin",
+      "email": "atestrosettiniq@cmu.edu",
+      "phone": "47-(620)179-0584",
+      "mobilePhone": "62-(961)361-6969",
+      "dateOfBirth": "1967-02-25",
+      "preferredContactTypeId": "phone"
+    },
+    "barcode": "61-194-4731",
+    "username": "test_rosettini",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "staff"
+  },
+  {
+    "externalSystemId": 28,
+    "personal": {
+      "firstName": "Junia",
+      "lastName": "Korting",
+      "email": "jtestbaffr@fda.gov",
+      "phone": "33-(159)475-8490",
+      "mobilePhone": "86-(478)111-6301",
+      "dateOfBirth": "1957-07-18",
+      "preferredContactTypeId": "email",
+      "addresses": [{
+        "addressLine1": "18760 Eliot Street",
+        "city": "Ocala",
+        "region": "Florida",
+        "postalCode": "34474",
+        "addressTypeId": "Payment",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "08-298-7655",
+    "username": "test_baff",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "graduate"
+  },
+  {
+    "externalSystemId": 29,
+    "personal": {
+      "firstName": "Antonetta",
+      "lastName": "Shipway",
+      "email": "atestwycliffes@ca.gov",
+      "phone": "7-(260)332-3645",
+      "mobilePhone": "389-(281)584-1696",
+      "dateOfBirth": "1967-08-08",
+      "preferredContactTypeId": "text",
+      "addresses": [{
+        "addressLine1": "5584 Glacier Hill Terrace",
+        "city": "Milwaukee",
+        "region": "Wisconsin",
+        "postalCode": "53225",
+        "addressTypeId": "Work",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "29-980-0023",
+    "username": "test_wycliffe",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 30,
+    "personal": {
+      "firstName": "Sayers",
+      "lastName": "Myrkus",
+      "email": "stestswindent@sciencedirect.com",
+      "phone": "598-(508)682-1926",
+      "mobilePhone": "62-(705)274-9219",
+      "dateOfBirth": "1993-07-09",
+      "preferredContactTypeId": "mail",
+      "addresses": [{
+        "addressLine1": "5257 Maple Wood Parkway",
+        "city": "San Jose",
+        "region": "California",
+        "postalCode": "95150",
+        "addressTypeId": "Home",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "39-236-8831",
+    "username": "test_swinden",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "staff"
+  },
+  {
+    "externalSystemId": 31,
+    "personal": {
+      "firstName": "Marley",
+      "lastName": "Tezure",
+      "email": "mtestkalfu@sitemeter.com",
+      "phone": "30-(477)127-2299",
+      "mobilePhone": "86-(862)255-9992",
+      "dateOfBirth": "1950-08-19",
+      "preferredContactTypeId": "email",
+      "addresses": [{
+        "addressLine1": "0 Crowley Alley",
+        "city": "Birmingham",
+        "region": "Alabama",
+        "postalCode": "35205",
+        "addressTypeId": "Work",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "83-586-7484",
+    "username": "test_kalf",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "staff"
+  },
+  {
+    "externalSystemId": 32,
+    "personal": {
+      "firstName": "Germaine",
+      "lastName": "McAuliffe",
+      "email": "gtestspaicev@mediafire.com",
+      "phone": "372-(673)662-0866",
+      "mobilePhone": "595-(221)495-6092",
+      "dateOfBirth": "1956-01-01",
+      "preferredContactTypeId": "phone"
+    },
+    "barcode": "86-353-3264",
+    "username": "test_spaice",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "graduate"
+  },
+  {
+    "externalSystemId": 33,
+    "personal": {
+      "firstName": "Christoforo",
+      "lastName": "Lenard",
+      "email": "ctestgookeyw@wiley.com",
+      "phone": "86-(459)323-0611",
+      "mobilePhone": "55-(328)887-1731",
+      "dateOfBirth": "1959-10-09",
+      "preferredContactTypeId": "mobile",
+      "addresses": [{
+        "addressLine1": "1038 Vermont Circle",
+        "city": "Lexington",
+        "region": "Kentucky",
+        "postalCode": "40591",
+        "addressTypeId": "Home",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "73-055-1876",
+    "username": "test_gookey",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 34,
+    "personal": {
+      "firstName": "Raye",
+      "lastName": "Hachard",
+      "email": "rtestjaeggix@blogtalkradio.com",
+      "phone": "81-(426)226-5297",
+      "mobilePhone": "62-(872)254-7756",
+      "dateOfBirth": "1968-11-15",
+      "preferredContactTypeId": "text",
+      "addresses": [{
+        "addressLine1": "152 Crowley Road",
+        "city": "West Hartford",
+        "region": "Connecticut",
+        "postalCode": "06127",
+        "addressTypeId": "Work",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "20-379-2844",
+    "username": "test_jaeggi",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 35,
+    "personal": {
+      "firstName": "Daryl",
+      "lastName": "Stachini",
+      "email": "dtestnannettiy@goodreads.com",
+      "phone": "62-(211)573-1103",
+      "mobilePhone": "351-(286)193-0225",
+      "dateOfBirth": "1958-02-08",
+      "preferredContactTypeId": "email",
+      "addresses": [{
+        "addressLine1": "7 Lakewood Gardens Center",
+        "city": "Melbourne",
+        "region": "Florida",
+        "postalCode": "32941",
+        "addressTypeId": "Order",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "36-512-3823",
+    "username": "test_nannetti",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 36,
+    "personal": {
+      "firstName": "Camel",
+      "lastName": "Brunnstein",
+      "email": "ctestrojz@amazon.co.jp",
+      "phone": "353-(137)244-9764",
+      "mobilePhone": "86-(942)373-3641",
+      "dateOfBirth": "1977-06-23",
+      "preferredContactTypeId": "mobile"
+    },
+    "barcode": "11-477-7117",
+    "username": "test_roj",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "faculty"
+  },
+  {
+    "externalSystemId": 37,
+    "personal": {
+      "firstName": "Orsa",
+      "lastName": "Cosh",
+      "email": "otestgosnoll10@bloglovin.com",
+      "phone": "66-(705)979-8635",
+      "mobilePhone": "84-(342)419-5376",
+      "dateOfBirth": "1954-01-31",
+      "preferredContactTypeId": "email",
+      "addresses": [{
+        "addressLine1": "04 Hoffman Circle",
+        "city": "Jacksonville",
+        "region": "Florida",
+        "postalCode": "32236",
+        "addressTypeId": "Work",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "31-259-2138",
+    "username": "test_gosnoll",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 38,
+    "personal": {
+      "firstName": "Pauline",
+      "lastName": "Sedgeman",
+      "email": "ptestlittell11@soundcloud.com",
+      "phone": "63-(522)531-1611",
+      "mobilePhone": "505-(919)193-2503",
+      "dateOfBirth": "1971-07-16",
+      "preferredContactTypeId": "email",
+      "addresses": [{
+        "addressLine1": "368 Bowman Park",
+        "city": "Shreveport",
+        "region": "Louisiana",
+        "postalCode": "71166",
+        "addressTypeId": "Work",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "90-537-1937",
+    "username": "test_littell",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "faculty"
+  },
+  {
+    "externalSystemId": 39,
+    "personal": {
+      "firstName": "Robby",
+      "lastName": "Haithwaite",
+      "email": "rtestdeviney12@moonfruit.com",
+      "phone": "234-(707)226-0113",
+      "mobilePhone": "420-(121)434-6255",
+      "dateOfBirth": "1959-10-27",
+      "preferredContactTypeId": "email"
+    },
+    "barcode": "63-966-4135",
+    "username": "test_deviney",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "undergrad"
+  },
+  {
+    "externalSystemId": 40,
+    "personal": {
+      "firstName": "Alessandro",
+      "lastName": "McCaw",
+      "email": "atestculross13@biglobe.ne.jp",
+      "phone": "62-(797)305-1648",
+      "mobilePhone": "880-(838)722-9710",
+      "dateOfBirth": "1973-05-11",
+      "preferredContactTypeId": "mobile",
+      "addresses": [{
+        "addressLine1": "7 Kropf Park",
+        "city": "Wichita",
+        "region": "Kansas",
+        "postalCode": "67220",
+        "addressTypeId": "Returns",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "80-133-2587",
+    "username": "test_culross",
+    "active": false,
+    "type": "patron",
+    "patronGroup": "graduate"
+  },
+  {
+    "externalSystemId": 41,
+    "personal": {
+      "firstName": "Rhodie",
+      "lastName": "Readie",
+      "email": "rtestgrewes14@ibm.com",
+      "phone": "380-(972)401-5865",
+      "mobilePhone": "86-(277)840-8381",
+      "dateOfBirth": "1994-12-07",
+      "preferredContactTypeId": "phone",
+      "addresses": [{
+        "addressLine1": "65 Maple Point",
+        "city": "Texarkana",
+        "region": "Texas",
+        "postalCode": "75507",
+        "addressTypeId": "Payment",
+        "primaryAddress": true
+      }]
+    },
+    "barcode": "21-486-5004",
+    "username": "test_grewes",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "faculty"
+  },
+  {
+    "externalSystemId": 42,
+    "personal": {
+      "firstName": "Phedra",
+      "lastName": "Skoyles",
+      "email": "ptestroddy15@ameblo.jp",
+      "phone": "66-(696)651-9330",
+      "mobilePhone": "86-(276)200-9190",
+      "dateOfBirth": "1952-03-07",
+      "preferredContactTypeId": "mobile"
+    },
+    "barcode": "91-831-7374",
+    "username": "test_roddy",
+    "active": true,
+    "type": "patron",
+    "patronGroup": "graduate"
   }
 ]

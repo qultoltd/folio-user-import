@@ -1,5 +1,5 @@
 {
-  "FOLIO_HOST": "localhost",
+  "FOLIO_HOST": "127.0.0.1",
   "FOLIO_PORT": "9130",
   "FOLIO_PROTOCOL": "http:",
   "FOLIO_TENANT": "diku",
