@@ -1,6 +1,6 @@
 [{
     "externalSystemId": "asd",
-    "username": "test_test",
+    "username": "test",
     "active": "true"
   },
   {
@@ -30,7 +30,7 @@
         "city": "",
         "region": "",
         "postalCode": "",
-        "addressTypeId": "primary",
+        "addressTypeId": "Home",
         "primaryAddress": "true"
       }],
       "preferredContactTypeId": "email"
@@ -49,7 +49,8 @@
       "phone": "63-(443)992-6454",
       "mobilePhone": "86-(713)580-3856",
       "dateOfBirth": "1976-05-01",
-      "preferredContactTypeId": "phone"
+      "preferredContactTypeId": "phone",
+      "addresses": []
     },
     "barcode": "04-844-4753",
     "username": "test_noir",
@@ -141,7 +142,8 @@
       "phone": "62-(539)367-5729",
       "mobilePhone": "7-(582)241-4862",
       "dateOfBirth": "1977-04-01",
-      "preferredContactTypeId": "mail"
+      "preferredContactTypeId": "mail",
+      "addresses": []
     },
     "barcode": "02-821-7986",
     "username": "test_jirak",
@@ -258,7 +260,8 @@
       "phone": "1-(605)875-2263",
       "mobilePhone": "7-(184)763-3564",
       "dateOfBirth": "1982-01-18",
-      "preferredContactTypeId": "mobile"
+      "preferredContactTypeId": "mobile",
+      "addresses": []
     },
     "barcode": "53-442-5312",
     "username": "test_oclery",
@@ -350,7 +353,8 @@
       "phone": "47-(620)179-0584",
       "mobilePhone": "62-(961)361-6969",
       "dateOfBirth": "1967-02-25",
-      "preferredContactTypeId": "phone"
+      "preferredContactTypeId": "phone",
+      "addresses": []
     },
     "barcode": "61-194-4731",
     "username": "test_rosettini",
@@ -467,7 +471,8 @@
       "phone": "372-(673)662-0866",
       "mobilePhone": "595-(221)495-6092",
       "dateOfBirth": "1956-01-01",
-      "preferredContactTypeId": "phone"
+      "preferredContactTypeId": "phone",
+      "addresses": []
     },
     "barcode": "86-353-3264",
     "username": "test_spaice",
@@ -559,7 +564,8 @@
       "phone": "353-(137)244-9764",
       "mobilePhone": "86-(942)373-3641",
       "dateOfBirth": "1977-06-23",
-      "preferredContactTypeId": "mobile"
+      "preferredContactTypeId": "mobile",
+      "addresses": []
     },
     "barcode": "11-477-7117",
     "username": "test_roj",
@@ -626,7 +632,8 @@
       "phone": "234-(707)226-0113",
       "mobilePhone": "420-(121)434-6255",
       "dateOfBirth": "1959-10-27",
-      "preferredContactTypeId": "email"
+      "preferredContactTypeId": "email",
+      "addresses": []
     },
     "barcode": "63-966-4135",
     "username": "test_deviney",
@@ -693,7 +700,8 @@
       "phone": "66-(696)651-9330",
       "mobilePhone": "86-(276)200-9190",
       "dateOfBirth": "1952-03-07",
-      "preferredContactTypeId": "mobile"
+      "preferredContactTypeId": "mobile",
+      "addresses": []
     },
     "barcode": "91-831-7374",
     "username": "test_roddy",
