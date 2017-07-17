@@ -5,6 +5,9 @@ var http = require('http');
 /** File management */
 var fs = require('fs');
 
+/** UUID generation */
+const uuidv1 = require('uuid/v1');
+
 /** 
  * Get the default configuration from environment variables, 
  * if none present use default values
@@ -311,7 +314,7 @@ function updateUser(user) {
  */
 function createUser(user) {
   if (user.id === undefined) {
-    user.id = user.username;
+    user.id = uuidv1();
   }
 
   if (user.patronGroup !== undefined) {
