@@ -10,6 +10,7 @@
   "author": "Katalin Lovagné Szűcs",
   "license": "ISC",
   "dependencies": {
+    "async": "^2.5.0",
     "log4js": "^1.1.1",
     "uuid": "^3.1.0"
   }
