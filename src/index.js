@@ -1,5 +1,6 @@
 'use strict'
 
+/* HTTP requests */
 var http = require('http');
 
 /* File management */
@@ -27,7 +28,7 @@ var folioPassword = process.env.FOLIO_PASSWORD || 'admin';
 var folioFilename = process.env.FOLIO_FILENAME || 'users.json';
 var folioPageSize = process.env.FOLIO_PAGESIZE || '10';
 var folioLogFile = process.env.FOLIO_LOGFILE || 'logs/user-import.log';
-/* Available levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL */
+/* Available log levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL */
 var folioLogLevel = process.env.FOLIO_LOGLEVEL || 'DEBUG';
 
 /* This variable will hold the authentication token */
@@ -50,6 +51,17 @@ var preferredContactTypes = {
 
 var logger;
 
+/**
+ * Calls config initialization and starts import process with login.
+ * 
+ * @param configUrl - optional parameter, filename for user data
+ */
+function startImport(configUrl) {
+  initConfig(configUrl);
+  login();
+}
+
+/* Initializes configuration from config file */
 function initConfig(configUrl) {
   if (configUrl) {
     try {
@@ -77,20 +89,15 @@ function initConfig(configUrl) {
   });
   logger = log4js.getLogger('user-import');
   logger.setLevel(folioLogLevel);
+  logger.trace('Configuration has been initialized.');
 }
 
 /**
- * Starts import process with login.
- * Calls listing of address types.
+ * Tries to log in to FOLIO with configured credentials.
+ * After login it calls the {getAddressTypes} function.
  * 
- * @param configUrl - optional parameter, filename for user data
+ * Process exits on failed login attempt.
  */
-function startImport(configUrl) {
-  initConfig(configUrl);
-  logger.trace('Config file name: ', configUrl);
-  login()
-}
-
 function login() {
   let authOptions = {
     method: 'POST',
@@ -105,14 +112,6 @@ function login() {
     }
   }
 
-  let authCredentials = {
-    'username': folioUsername,
-    'password': folioPassword,
-    'tenant': folioTenant
-  };
-
-  let json = JSON.stringify(authCredentials);
-
   /** Login to FOLIO and save token from response. */
   let req = http.request(authOptions, function (response) {
     let loginToken = response.headers['x-okapi-token'];
@@ -120,25 +119,98 @@ function login() {
       logger.error('Failed to log in to FOLIO. Exiting.');
       process.exit();
     }
-    logger.trace('Logged in to FOLIO.');
     authToken = loginToken;
+    logger.trace('Login was successful. Saved login token.')
     getAddressTypes();
   }).on('error', (e) => {
     logger.error('Failed to request log in to FOLIO.', e.message);
     process.exit();
   });
 
-  req.write(json);
+  req.write(JSON.stringify({
+    'username': folioUsername,
+    'password': folioPassword,
+    'tenant': folioTenant
+  }));
   req.end();
 }
 
 /**
- * Read user data from (JSON) file and start processing.
+ * Get list of address types existing in the system.
+ * Trigger retrieving patron groups even if address types could not be processed.
+ */
+function getAddressTypes() {
+
+  let addressTypeRequest = createRequest('GET', '/addresstypes', 'application/json');
+
+  let req = http.get(addressTypeRequest, function (response) {
+    let addressResult = '';
+    response.on('data', (chunk) => {
+      addressResult += chunk;
+    });
+    response.on('end', () => {
+      try {
+        if (response.statusCode > 299 || response.statusCode < 200) {
+          logger.warn('Failed to list address types.', addressResult);
+        } else {
+          let addressTypeList = JSON.parse(addressResult).addressTypes;
+          addressTypeList.forEach(function (addressType) {
+            addressTypes[addressType.addressType] = addressType.id;
+          });
+          logger.trace('Listed address types successfully.');
+        }
+      } catch (e) {
+        logger.error('Failed to get address type list. Reason: ', e.message);
+      }
+      getPatronGroups();
+    });
+  }).on('error', (e) => {
+    logger.error('Failed to list address types.', e.message);
+  });
+}
+
+/**
+ * Get patron group list and create a name-id map.
+ * Triggers user data processing even if patron groups could not be processed.
+ */
+function getPatronGroups() {
+  let patronGroupRequest = createRequest('GET', '/groups', 'application/json');
+
+  let req = http.get(patronGroupRequest, function (response) {
+    let groupResult = '';
+    response.on('data', (chunk) => {
+      groupResult += chunk;
+    });
+    response.on('end', () => {
+      try {
+        if (response.statusCode > 299 || response.statusCode < 200) {
+          logger.warn('Failed to list patron groups.', groupResult);
+        } else {
+          var groupList = JSON.parse(groupResult);
+          groupList.usergroups.forEach(function (group) {
+            patronGroups[group.group] = group.id;
+          });
+          logger.trace('Listed patron groups successfully.');
+        }
+      } catch (e) {
+        logger.error('Failed to retrieve patron groups. Reason: ', e.message);
+      }
+      readUserData();
+    });
+  }).on('error', (e) => {
+    logger.error('Failed to list parton groups.', e.message);
+  });
+}
+
+/**
+ * Read user data from (JSON) file and triggers processing.
+ * 
+ * Process exits if the file can not be read.
  */
 function readUserData() {
   fs.readFile(folioFilename, function (err, data) {
-    if (err) {
-      logger.error(err.stack);
+    if (err || !data) {
+      logger.error('Failed to read user data.', err.stack);
       process.exit();
     }
 
@@ -150,22 +222,26 @@ function readUserData() {
  * Iterate over users and call searchusers for every {folioPageSize} user.
  * 
  * @param usersDataString - the conent of the users (JSON) file as a string
+ * 
+ * Process exits if the user data can not be parsed as a JSON list.
  */
 function processUsers(usersDataString) {
-  let data = JSON.parse(usersDataString);
-
   let userData = [];
-
-  while (data.length) {
-    userData.push(data.splice(0, folioPageSize));
+  try {
+    let data = JSON.parse(usersDataString);
+    while (data.length) {
+      userData.push(data.splice(0, folioPageSize));
+    }
+  } catch (e) {
+    logger.error('Failed to parse user data as JSON.', e.message);
+    process.exit();
   }
 
   async.eachLimit(userData, 1, searchUsers, function (err) {
-    logger.info('ended.');
     if (err) {
-      logger.error('async error: ', err);
+      logger.error('Failed to import all users.', err);
     } else {
-      logger.info('Imported all users.');
+      logger.info('Imported all users successfully.');
     }
   });
 
@@ -197,20 +273,20 @@ function searchUsers(userList, callback) {
     });
     response.on('end', () => {
       try {
-        logger.debug('status: ', response.statusCode);
         if (response.status < 200 || response.status > 299) {
-          callback(new Error('Failed to list existing users'));
+          logger.warn('Failed to list existing users ', rawData);
+          callback(new Error('Failed to list existing users with query: ' + queryPath));
         } else {
           const userSearchResult = JSON.parse(rawData);
           importUsers(userList, userSearchResult.users, callback);
         }
       } catch (e) {
-        logger.error('Failed to list existing users', e.message);
+        logger.error('Failed to list and import existing users with query: ' + queryPath, e.message);
         callback(e);
       }
     });
   }).on('error', (e) => {
-    logger.error('Failed to search users.', e.message);
+    logger.error('Failed to list existing users with query: ' + queryPath, e.message);
     callback(e);
   });
 }
@@ -234,6 +310,7 @@ function importUsers(userList, existingUsers, callback) {
       userToUpdate.id = user.id;
     }
   });
+  logger.trace('Updated existing users with ids.');
 
   async.each(userMap, function (user, userCallback) {
     if (user.id) {
@@ -241,7 +318,7 @@ function importUsers(userList, existingUsers, callback) {
     } else {
       createUser(user, userCallback);
     }
-  }, function (err, result) {
+  }, function (err) {
     if (err) {
       logger.info('Failed to import users', err);
       callback(err);
@@ -259,26 +336,9 @@ function importUsers(userList, existingUsers, callback) {
  */
 function updateUser(user, callback) {
 
-  if (user.patronGroup) {
-    user.patronGroup = patronGroups[user.patronGroup];
-  }
-
-  if (user.personal) {
-    if (user.personal.preferredContactTypeId) {
-      user.personal.preferredContactTypeId = preferredContactTypes[user.personal.preferredContactTypeId];
-    }
-    if (user.personal.addresses && user.personal.addresses.length > 0) {
-      user.personal.addresses.forEach(function (address) {
-        if (address.addressTypeId) {
-          address.addressTypeId = addressTypes[address.addressTypeId];
-        }
-      });
-    }
-  }
+  user = mapUserData(user);
 
   let updateOptions = createRequest('PUT', '/users/' + user.id, 'text/plain', 'application/json');
-
-  let json = JSON.stringify(user);
 
   let req = http.request(updateOptions, function (response) {
     logger.info('User update status: ' + user.externalSystemId, response.statusCode);
@@ -290,7 +350,7 @@ function updateUser(user, callback) {
       try {
         if (response.statusCode > 299 || response.statusCode < 200) {
           logger.warn('Failed to update user with externalSystemId: ' + user.externalSystemId, userUpdateResult);
-          callback(new Error('Failed to update userwith externalSystemId: ' + user.externalSystemId));
+          callback(new Error('Failed to update user with externalSystemId: ' + user.externalSystemId));
         } else {
           callback();
         }
@@ -304,7 +364,7 @@ function updateUser(user, callback) {
     callback(e);
   });
 
-  req.write(json);
+  req.write(JSON.stringify(user));
   req.end();
 
 }
@@ -317,26 +377,9 @@ function updateUser(user, callback) {
 function createUser(user, callback) {
   user.id = uuidv1();
 
-  if (user.patronGroup) {
-    user.patronGroup = patronGroups[user.patronGroup];
-  }
-
-  if (user.personal) {
-    if (user.personal.preferredContactTypeId) {
-      user.personal.preferredContactTypeId = preferredContactTypes[user.personal.preferredContactTypeId];
-    }
-    if (user.personal.addresses && user.personal.addresses.length > 0) {
-      user.personal.addresses.forEach(function (address) {
-        if (address.addressTypeId) {
-          address.addressTypeId = addressTypes[address.addressTypeId];
-        }
-      });
-    }
-  }
+  user = mapUserData(user);
 
   let createOptions = createRequest('POST', '/users', 'text/plain', 'application/json');
-
-  let json = JSON.stringify(user);
 
   let req = http.request(createOptions, function (response) {
     logger.info('User create status: ' + user.externalSystemId, response.statusCode);
@@ -362,7 +405,7 @@ function createUser(user, callback) {
     callback(e);
   });
 
-  req.write(json);
+  req.write(JSON.stringify(user));
   req.end();
 }
 
@@ -373,11 +416,6 @@ function createUser(user, callback) {
  */
 function createCredentials(user, callback) {
   let credentialOptions = createRequest('POST', '/authn/credentials', 'text/plain', 'application/json');
-
-  let json = JSON.stringify({
-    'username': user.username,
-    'password': ''
-  });
 
   let req = http.request(credentialOptions, function (response) {
     logger.info('User credentials creation status: ' + user.username, response.statusCode);
@@ -403,88 +441,16 @@ function createCredentials(user, callback) {
     callback(e);
   });
 
-  req.write(json);
+  req.write(JSON.stringify({
+    'username': user.username,
+    'password': ''
+  }));
   req.end();
-
-}
-
-/**
- * Get patron group list and create a name-id map.
- * Start user data processing.
- */
-function getPatronGroups() {
-  let patronGroupRequest = createRequest('GET', '/groups', 'application/json');
-
-  let req = http.get(patronGroupRequest, function (response) {
-    logger.info('Patron group list request status: ', response.statusCode);
-    let groupResult = '';
-    response.on('data', (chunk) => {
-      groupResult += chunk;
-    });
-    response.on('end', () => {
-      try {
-        if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to list patron groups.', groupResult);
-        } else {
-          var groupList = JSON.parse(groupResult);
-          groupList.usergroups.forEach(function (group) {
-            patronGroups[group.group] = group.id;
-          });
-        }
-      } catch (e) {
-        logger.error('Failed to retrieve patron groups. Reason: ', e.message);
-      }
-      readUserData();
-    });
-  }).on('error', (e) => {
-    logger.error('Failed to list parton groups.', e.message);
-  });
-
-}
-
-/**
- * Get list of address types existing in the system.
- * Trigger retrieving patron groups.
- */
-function getAddressTypes() {
-
-  let addressTypeRequest = createRequest('GET', '/addresstypes', 'application/json');
-
-  let req = http.get(addressTypeRequest, function (response) {
-    logger.info('Address type list request status: ', response.statusCode);
-    let addressResult = '';
-    response.on('data', (chunk) => {
-      addressResult += chunk;
-    });
-    response.on('end', () => {
-      try {
-        if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to list address types.', addressResult);
-        } else {
-          let addressTypeList = JSON.parse(addressResult).addressTypes;
-          addressTypeList.forEach(function (addressType) {
-            addressTypes[addressType.addressType] = addressType.id;
-          });
-          logger.trace('Address types are: ', addressTypes);
-        }
-      } catch (e) {
-        logger.error('Failed to get address type list. Reason: ', e.message);
-      }
-      getPatronGroups();
-    });
-  }).on('error', (e) => {
-    logger.error('Failed to list address types.', e.message);
-  });
 
 }
 
 function applyEmptyPermissionSet(user, callback) {
   let createPermissions = createRequest('POST', '/perms/users', 'text/plain', 'application/json');
-
-  let json = JSON.stringify({
-    'username': user.username,
-    'permissions': []
-  });
 
   let req = http.request(createPermissions, function (response) {
     logger.info('User permissions creation status: ' + user.username, response.statusCode);
@@ -507,7 +473,10 @@ function applyEmptyPermissionSet(user, callback) {
     });
   });
 
-  req.write(json);
+  req.write(JSON.stringify({
+    'username': user.username,
+    'permissions': []
+  }));
   req.end();
 }
 
@@ -528,6 +497,43 @@ function createRequest(method, path, accept, contenttype) {
     request.headers['Content-type'] = contenttype;
   }
   return request;
+}
+
+function mapUserData(user) {
+  
+  if (user.patronGroup) {
+    if(patronGroups[user.patronGroup]) {
+      user.patronGroup = patronGroups[user.patronGroup];
+    } else {
+      delete user.patronGroup;
+    }
+  }
+
+  if (user.personal) {
+    if (user.personal.preferredContactTypeId) {
+      if(preferredContactTypes[user.personal.preferredContactTypeId]) {
+        user.personal.preferredContactTypeId = preferredContactTypes[user.personal.preferredContactTypeId];
+      } else {
+        delete user.personal.preferredContactTypeId;
+      }
+    }
+    if (user.personal.addresses && user.personal.addresses.length > 0) {
+      let addresses = [];
+      user.personal.addresses.forEach(function (address) {
+        if (address.addressTypeId) {
+          if(addressTypes[address.addressTypeId]) {
+            address.addressTypeId = addressTypes[address.addressTypeId];
+            addresses.push(address);
+          } else {
+            logger.warn('Address does not have valid address type which is mandatory. Skipping.');
+          }
+        }
+      });
+      user.personal.addresses = addresses;
+    }
+  }
+
+  return user;
 }
 
 module.exports = function (configUrl) {
