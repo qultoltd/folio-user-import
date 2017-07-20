@@ -150,14 +150,27 @@ function getAddressTypes() {
     });
     response.on('end', () => {
       try {
-        if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to list address types.', addressResult);
-        } else {
-          let addressTypeList = JSON.parse(addressResult).addressTypes;
-          addressTypeList.forEach(function (addressType) {
-            addressTypes[addressType.addressType] = addressType.id;
-          });
-          logger.debug('Listed address types successfully.');
+        switch(response.statusCode) {
+          case 200: {
+            let addressTypeList = JSON.parse(addressResult).addressTypes;
+            addressTypeList.forEach(function (addressType) {
+              addressTypes[addressType.addressType] = addressType.id;
+            });
+            logger.debug('Listed address types successfully.');
+            break;
+          }
+          case 403: {
+            logger.error('User is unauthorized. Exiting.', addressResult);
+            process.exit();
+          }
+          case 500: {
+            logger.error('Internal server error. Exiting.', addressResult);
+            process.exit();
+          }
+          default: {
+            logger.warn('Failed to list address types.', addressResult);
+            break;
+          }
         }
       } catch (e) {
         logger.error('Failed to get address type list. Reason: ', e.message);
@@ -183,14 +196,27 @@ function getPatronGroups() {
     });
     response.on('end', () => {
       try {
-        if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to list patron groups.', groupResult);
-        } else {
-          var groupList = JSON.parse(groupResult);
-          groupList.usergroups.forEach(function (group) {
-            patronGroups[group.group] = group.id;
-          });
-          logger.trace('Listed patron groups successfully.');
+        switch(response.statusCode) {
+          case 200: {
+            var groupList = JSON.parse(groupResult);
+            groupList.usergroups.forEach(function (group) {
+              patronGroups[group.group] = group.id;
+            });
+            logger.trace('Listed patron groups successfully.');
+            break;
+          }
+          case 403: {
+            logger.error('User is unauthorized. Exiting.', groupResult);
+            process.exit();
+          }
+          case 500: {
+            logger.error('Internal server error. Exiting.', groupResult);
+            process.exit();
+          }
+          default: {
+            logger.warn('Failed to list patron groups.', groupResult);
+            break;
+          }
         }
       } catch (e) {
         logger.error('Failed to retrieve patron groups. Reason: ', e.message);
@@ -273,12 +299,27 @@ function searchUsers(userList, callback) {
     });
     response.on('end', () => {
       try {
-        if (response.status < 200 || response.status > 299) {
-          logger.warn('Failed to list existing users ', rawData);
-          callback(new Error('Failed to list existing users with query: ' + queryPath));
-        } else {
-          const userSearchResult = JSON.parse(rawData);
-          importUsers(userList, userSearchResult.users, callback);
+        switch(response.statusCode) {
+          case 200: {
+            const userSearchResult = JSON.parse(rawData);
+            importUsers(userList, userSearchResult.users, callback);
+            break;
+          }
+          case 403: {
+            logger.error('User is unauthorized.', rawData);
+            callback(new Error(rawData));
+            break;
+          }
+          case 500: {
+            logger.error('Internal server error.', rawData);
+            callback(new Error(rawData));
+            break;
+          }
+          default: {
+            logger.warn('Failed to list existing users ', rawData);
+            callback(new Error('Failed to list existing users with query: ' + queryPath));
+            break;
+          }
         }
       } catch (e) {
         logger.error('Failed to list and import existing users with query: ' + queryPath, e.message);
@@ -348,14 +389,29 @@ function updateUser(user, callback) {
     });
     response.on('end', () => {
       try {
-        if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to update user with externalSystemId: ' + user.externalSystemId, userUpdateResult);
-          logger.debug('User data: ', user);
-          //callback(new Error('Failed to update user with externalSystemId: ' + user.externalSystemId));
-          // This way if one user save fails it won't affect the creation/update of the other users.
-          callback();
-        } else {
-          callback();
+        switch(response.statusCode) {
+          case 204: {
+            callback();
+            break;
+          }
+          case 403: {
+            logger.error('User is unauthorized.', userUpdateResult);
+            callback(new Error(userUpdateResult));
+            break;
+          }
+          case 500: {
+            logger.error('Internal server error.', userUpdateResult);
+            callback(new Error(userUpdateResult));
+            break;
+          }
+          default: {
+            logger.warn('Failed to update user with externalSystemId: ' + user.externalSystemId, userUpdateResult);
+            logger.debug('User data: ', user);
+            //callback(new Error('Failed to update user with externalSystemId: ' + user.externalSystemId));
+            // This way if one user save fails it won't affect the creation/update of the other users.
+            callback();
+            break;
+          }
         }
       } catch (e) {
         logger.error('Failed to update user with externalSystemId: ' + user.externalSystemId + ' Reason: ', e.message);
@@ -392,14 +448,29 @@ function createUser(user, callback) {
     });
     response.on('end', () => {
       try {
-        if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to create user with externalSystemId: ' + user.externalSystemId, userCreateResult);
-          //callback(new Error('Failed to create user with externalSystemId: ' + user.externalSystemId));
-          // Do not let the whole batch fail because of one user save failure.
-          callback();
-        } else {
-          logger.debug('Created user successfully. Creating credentials.');
-          createCredentials(user, callback);
+        switch(response.statusCode) {
+          case 201: {
+            logger.debug('Created user successfully. Creating credentials.');
+            createCredentials(user, callback);
+            break;
+          }
+          case 403: {
+            logger.error('User is unauthorized.', userCreateResult);
+            callback(new Error(userCreateResult));
+            break;
+          }
+          case 500: {
+            logger.error('Internal server error.', userCreateResult);
+            callback(new Error(userCreateResult));
+            break;
+          }
+          default: {
+            logger.warn('Failed to create user with externalSystemId: ' + user.externalSystemId, userCreateResult);
+            //callback(new Error('Failed to create user with externalSystemId: ' + user.externalSystemId));
+            // Do not let the whole batch fail because of one user save failure.
+            callback();
+            break;
+          }
         }
       } catch (e) {
         logger.error(e.message);
@@ -431,14 +502,24 @@ function createCredentials(user, callback) {
     });
     response.on('end', () => {
       try {
-        if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to create user credentials for user with name: ' + user.username, credentialCreateResult);
-          //callback(new Error('Failed to create user credentials for user with name: ' + user.username));
-          logger.debug('Deleting user.');
-          deleteUser(callback);
-        } else {
-          logger.debug('User credentials created successfully. Adding empty permission set.');
-          applyEmptyPermissionSet(user, callback);
+        switch(response.statusCode) {
+          case 201: {
+            logger.debug('User credentials created successfully. Adding empty permission set.');
+            applyEmptyPermissionSet(user, callback);
+            break;
+          }
+          case 500: {
+            logger.error('Internal server error.', credentialCreateResult);
+            callback(new Error(credentialCreateResult));
+            break;
+          }
+          default: {
+            logger.warn('Failed to create user credentials for user with name: ' + user.username, credentialCreateResult);
+            //callback(new Error('Failed to create user credentials for user with name: ' + user.username));
+            logger.debug('Deleting user.');
+            deleteUser(callback);
+            break;
+          }
         }
       } catch (e) {
         logger.error('Failed to save credentials for user with name: ' + user.username + ' Reason: ', e.message);
@@ -469,22 +550,31 @@ function applyEmptyPermissionSet(user, callback) {
     });
     response.on('end', () => {
       try {
-        if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to create user permissions for user with name: ' + user.username, permissionCreateResult);
-          //callback(new Error('Failed to create user permissions for user with name: ' + user.username));
-          logger.debug('Deleting user with credentials.');
-          removeUserCredentials(user, callback, function(err, user, callback) {
-            if(err) {
-              callback(err);
-            } else {
-              logger.info('callback: ', callback);
-              deleteUser(user, callback);
-            }
-          });
-          
-        } else {
-          logger.debug('Permissions added successfully.');
-          callback();
+        switch(response.statusCode) {
+          case 201: {
+            logger.debug('Permissions added successfully.');
+            callback();
+            break;
+          }
+          case 500: {
+            logger.error('Internal server error.', permissionCreateResult);
+            callback(new Error(permissionCreateResult));
+            break;
+          }
+          default: {
+            logger.warn('Failed to create user permissions for user with name: ' + user.username, permissionCreateResult);
+            //callback(new Error('Failed to create user permissions for user with name: ' + user.username));
+            logger.debug('Deleting user with credentials.');
+            removeUserCredentials(user, callback, function(err, user, callback) {
+              if(err) {
+                callback(err);
+              } else {
+                logger.debug('callback: ', callback);
+                deleteUser(user, callback);
+              }
+            });
+            break;
+          }
         }
       } catch (e) {
         logger.error(e.message);
@@ -512,12 +602,17 @@ function deleteUser(user, callback) {
     });
     response.on('end', () => {
       try {
-        if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to delete user with externalSystemId: ' + user.externalSystemId, userDeleteResult);
-          callback(new Error('Failed to delete user with externalSystemId: ' + user.externalSystemId));
-        } else {
-          logger.debug('User deleted successfully.');
-          callback();
+        switch(response.statusCode) {
+          case 204: {
+            logger.debug('User deleted successfully.');
+            callback();
+            break;
+          }
+          default: {
+            logger.warn('Failed to delete user with externalSystemId: ' + user.externalSystemId, userDeleteResult);
+            callback(new Error('Failed to delete user with externalSystemId: ' + user.externalSystemId));
+            break;
+          }
         }
       } catch (e) {
         logger.error(e.message);
@@ -543,12 +638,17 @@ function removeUserCredentials(user, finalCallback, callback) {
     });
     response.on('end', () => {
       try {
-        if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to remove user credentials for user with name: ' + user.username, credentialRemoveResult);
-          callback(new Error('Failed to remove user credentials for user with name: ' + user.username));
-        } else {
-          logger.debug('User credentials removed successfully.');
-          callback(null, user, finalCallback);
+        switch(response.statusCode) {
+          case 204: {
+            logger.debug('User credentials removed successfully.');
+            callback(null, user, finalCallback);
+            break;
+          }
+          default: {
+            logger.warn('Failed to remove user credentials for user with name: ' + user.username, credentialRemoveResult);
+            callback(new Error('Failed to remove user credentials for user with name: ' + user.username));
+            break;
+          }
         }
       } catch (e) {
         logger.error('Failed to remove credentials for user with name: ' + user.username + ' Reason: ', e.message);
