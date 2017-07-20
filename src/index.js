@@ -159,7 +159,7 @@ function getAddressTypes() {
             logger.debug('Listed address types successfully.');
             break;
           }
-          case 403: {
+          case 401: {
             logger.error('User is unauthorized. Exiting.', addressResult);
             process.exit();
           }
@@ -205,7 +205,7 @@ function getPatronGroups() {
             logger.trace('Listed patron groups successfully.');
             break;
           }
-          case 403: {
+          case 401: {
             logger.error('User is unauthorized. Exiting.', groupResult);
             process.exit();
           }
@@ -305,8 +305,13 @@ function searchUsers(userList, callback) {
             importUsers(userList, userSearchResult.users, callback);
             break;
           }
-          case 403: {
+          case 401: {
             logger.error('User is unauthorized.', rawData);
+            callback(new Error(rawData));
+            break;
+          }
+          case 403: {
+            logger.error('Current user is not allowed to list users.', rawData);
             callback(new Error(rawData));
             break;
           }
@@ -394,8 +399,13 @@ function updateUser(user, callback) {
             callback();
             break;
           }
-          case 403: {
+          case 401: {
             logger.error('User is unauthorized.', userUpdateResult);
+            callback(new Error(userUpdateResult));
+            break;
+          }
+          case 403: {
+            logger.error('Current user is not allowed to update a user.', userUpdateResult);
             callback(new Error(userUpdateResult));
             break;
           }
@@ -454,8 +464,13 @@ function createUser(user, callback) {
             createCredentials(user, callback);
             break;
           }
-          case 403: {
+          case 401: {
             logger.error('User is unauthorized.', userCreateResult);
+            callback(new Error(userCreateResult));
+            break;
+          }
+          case 403: {
+            logger.error('User is not allowed to create a new user.', userCreateResult);
             callback(new Error(userCreateResult));
             break;
           }
