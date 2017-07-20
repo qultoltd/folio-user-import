@@ -120,7 +120,7 @@ function login() {
       process.exit();
     }
     authToken = loginToken;
-    logger.trace('Login was successful. Saved login token.')
+    logger.debug('Login was successful. Saved login token.')
     getAddressTypes();
   }).on('error', (e) => {
     logger.error('Failed to request log in to FOLIO.', e.message);
@@ -157,7 +157,7 @@ function getAddressTypes() {
           addressTypeList.forEach(function (addressType) {
             addressTypes[addressType.addressType] = addressType.id;
           });
-          logger.trace('Listed address types successfully.');
+          logger.debug('Listed address types successfully.');
         }
       } catch (e) {
         logger.error('Failed to get address type list. Reason: ', e.message);
@@ -241,7 +241,7 @@ function processUsers(usersDataString) {
     if (err) {
       logger.error('Failed to import all users.', err);
     } else {
-      logger.info('Imported all users successfully.');
+      logger.info('Import has finished. See log for failed users.');
     }
   });
 
@@ -320,10 +320,10 @@ function importUsers(userList, existingUsers, callback) {
     }
   }, function (err) {
     if (err) {
-      logger.info('Failed to import users', err);
+      logger.info('Failed to import user batch.', err);
       callback(err);
     } else {
-      logger.info('Imported users.');
+      logger.debug('Imported user batch successfully.');
       callback();
     }
   });
@@ -350,7 +350,10 @@ function updateUser(user, callback) {
       try {
         if (response.statusCode > 299 || response.statusCode < 200) {
           logger.warn('Failed to update user with externalSystemId: ' + user.externalSystemId, userUpdateResult);
-          callback(new Error('Failed to update user with externalSystemId: ' + user.externalSystemId));
+          logger.debug('User data: ', user);
+          //callback(new Error('Failed to update user with externalSystemId: ' + user.externalSystemId));
+          // This way if one user save fails it won't affect the creation/update of the other users.
+          callback();
         } else {
           callback();
         }
@@ -391,8 +394,11 @@ function createUser(user, callback) {
       try {
         if (response.statusCode > 299 || response.statusCode < 200) {
           logger.warn('Failed to create user with externalSystemId: ' + user.externalSystemId, userCreateResult);
-          callback(new Error('Failed to create user with externalSystemId: ' + user.externalSystemId));
+          //callback(new Error('Failed to create user with externalSystemId: ' + user.externalSystemId));
+          // Do not let the whole batch fail because of one user save failure.
+          callback();
         } else {
+          logger.debug('Created user successfully. Creating credentials.');
           createCredentials(user, callback);
         }
       } catch (e) {
@@ -419,16 +425,19 @@ function createCredentials(user, callback) {
 
   let req = http.request(credentialOptions, function (response) {
     logger.info('User credentials creation status: ' + user.username, response.statusCode);
-    let userCreateResult = '';
+    let credentialCreateResult = '';
     response.on('data', (chunk) => {
-      userCreateResult += chunk;
+      credentialCreateResult += chunk;
     });
     response.on('end', () => {
       try {
         if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to create user credentials for user with name: ' + user.username, userCreateResult);
-          callback(new Error('Failed to create user credentials for user with name: ' + user.username));
+          logger.warn('Failed to create user credentials for user with name: ' + user.username, credentialCreateResult);
+          //callback(new Error('Failed to create user credentials for user with name: ' + user.username));
+          logger.debug('Deleting user.');
+          deleteUser(callback);
         } else {
+          logger.debug('User credentials created successfully. Adding empty permission set.');
           applyEmptyPermissionSet(user, callback);
         }
       } catch (e) {
@@ -454,16 +463,27 @@ function applyEmptyPermissionSet(user, callback) {
 
   let req = http.request(createPermissions, function (response) {
     logger.info('User permissions creation status: ' + user.username, response.statusCode);
-    let userCreateResult = '';
+    let permissionCreateResult = '';
     response.on('data', (chunk) => {
-      userCreateResult += chunk;
+      permissionCreateResult += chunk;
     });
     response.on('end', () => {
       try {
         if (response.statusCode > 299 || response.statusCode < 200) {
-          logger.warn('Failed to create user permissions for user with name: ' + user.username, userCreateResult);
-          callback(new Error('Failed to create user permissions for user with name: ' + user.username));
+          logger.warn('Failed to create user permissions for user with name: ' + user.username, permissionCreateResult);
+          //callback(new Error('Failed to create user permissions for user with name: ' + user.username));
+          logger.debug('Deleting user with credentials.');
+          removeUserCredentials(user, callback, function(err, user, callback) {
+            if(err) {
+              callback(err);
+            } else {
+              logger.info('callback: ', callback);
+              deleteUser(user, callback);
+            }
+          });
+          
         } else {
+          logger.debug('Permissions added successfully.');
           callback();
         }
       } catch (e) {
@@ -477,6 +497,69 @@ function applyEmptyPermissionSet(user, callback) {
     'username': user.username,
     'permissions': []
   }));
+  req.end();
+}
+
+function deleteUser(user, callback) {
+
+  let deleteOptions = createRequest('DELETE', '/users/' + user.id, 'text/plain');
+
+  let req = http.request(deleteOptions, function (response) {
+    logger.info('User delete status: ' + user.externalSystemId, response.statusCode);
+    let userDeleteResult = '';
+    response.on('data', (chunk) => {
+      userDeleteResult += chunk;
+    });
+    response.on('end', () => {
+      try {
+        if (response.statusCode > 299 || response.statusCode < 200) {
+          logger.warn('Failed to delete user with externalSystemId: ' + user.externalSystemId, userDeleteResult);
+          callback(new Error('Failed to delete user with externalSystemId: ' + user.externalSystemId));
+        } else {
+          logger.debug('User deleted successfully.');
+          callback();
+        }
+      } catch (e) {
+        logger.error(e.message);
+        callback(e);
+      }
+    });
+  }).on('error', (e) => {
+    logger.error('Failed to delete user with externalSystemId: ' + user.externalSystemId, e.message);
+    callback(e);
+  });
+
+  req.end();
+}
+
+function removeUserCredentials(user, finalCallback, callback) {
+  let credentialOptions = createRequest('DELETE', '/authn/credentials/' + user.username, 'text/plain');
+
+  let req = http.request(credentialOptions, function (response) {
+    logger.info('User credentials deletion status: ' + user.username, response.statusCode);
+    let credentialRemoveResult = '';
+    response.on('data', (chunk) => {
+      credentialRemoveResult += chunk;
+    });
+    response.on('end', () => {
+      try {
+        if (response.statusCode > 299 || response.statusCode < 200) {
+          logger.warn('Failed to remove user credentials for user with name: ' + user.username, credentialRemoveResult);
+          callback(new Error('Failed to remove user credentials for user with name: ' + user.username));
+        } else {
+          logger.debug('User credentials removed successfully.');
+          callback(null, user, finalCallback);
+        }
+      } catch (e) {
+        logger.error('Failed to remove credentials for user with name: ' + user.username + ' Reason: ', e.message);
+        callback(e);
+      }
+    });
+  }).on('error', (e) => {
+    logger.error('Failed to remove user credentials for user: ' + user.username, e.message);
+    callback(e);
+  });
+
   req.end();
 }
 

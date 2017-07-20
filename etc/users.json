@@ -24,7 +24,7 @@
       "mobilePhone": "163468723",
       "dateOfBirth": "2000-01-01",
       "addresses": [{
-        "countryId": "",
+        "countryId": "HU",
         "addressLine1": "",
         "addressLine2": "",
         "city": "",

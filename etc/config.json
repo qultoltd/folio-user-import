@@ -5,7 +5,7 @@
   "FOLIO_TENANT": "diku",
   "FOLIO_USERNAME": "diku_admin",
   "FOLIO_PASSWORD": "admin",
-  "FOLIO_FILENAME": "etc/users.json",
+  "FOLIO_FILENAME": "etc/testdata.json",
   "FOLIO_PAGESIZE": "10",
   "FOLIO_LOGFILE": "logs/user-import.log"
 }
