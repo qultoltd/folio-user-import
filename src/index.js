@@ -7,7 +7,7 @@ var http = require('http');
 var fs = require('fs');
 
 /* UUID generation */
-var uuidv1 = require('uuid/v1');
+var uuid = require('uuid/v4');
 
 /* Asynchron operations */
 var async = require('async');
@@ -58,11 +58,20 @@ var logger;
  */
 function startImport(configUrl) {
   initConfig(configUrl);
-  login();
+  login(function() {
+    getAddressTypes(function() {
+      getPatronGroups(function() {
+        readUserData(function(userData) {
+          processUsers(userData);
+        });
+      });
+    });
+  });
 }
 
 /* Initializes configuration from config file */
 function initConfig(configUrl) {
+  var configError;
   if (configUrl) {
     try {
       let config = require(configUrl);
@@ -77,7 +86,8 @@ function initConfig(configUrl) {
       folioLogFile = config.FOLIO_LOGFILE || folioLogFile;
       folioLogLevel = config.FOLIO_LOGLEVEL || folioLogLevel;
     } catch (e) {
-      logger.warn('Failed to load config file.', e.message);
+      //Logger is not yet configured here.
+      configError = e;
     }
   }
   log4js.configure({
@@ -90,6 +100,9 @@ function initConfig(configUrl) {
   logger = log4js.getLogger('user-import');
   logger.setLevel(folioLogLevel);
   logger.trace('Configuration has been initialized.');
+  if(configError) {
+    logger.warn('Error while processing config: ', e.message);
+  }
 }
 
 /**
@@ -98,7 +111,7 @@ function initConfig(configUrl) {
  * 
  * Process exits on failed login attempt.
  */
-function login() {
+function login(callback) {
   let authOptions = {
     method: 'POST',
     protocol: folioProtocol,
@@ -120,26 +133,25 @@ function login() {
       process.exit();
     }
     authToken = loginToken;
-    logger.debug('Login was successful. Saved login token.')
-    getAddressTypes();
+    logger.debug('Login was successful. Saved login token.');
+    callback();
   }).on('error', (e) => {
     logger.error('Failed to request log in to FOLIO.', e.message);
     process.exit();
   });
 
-  req.write(JSON.stringify({
+  req.end(JSON.stringify({
     'username': folioUsername,
     'password': folioPassword,
     'tenant': folioTenant
   }));
-  req.end();
 }
 
 /**
  * Get list of address types existing in the system.
  * Trigger retrieving patron groups even if address types could not be processed.
  */
-function getAddressTypes() {
+function getAddressTypes(callback) {
 
   let addressTypeRequest = createRequest('GET', '/addresstypes', 'application/json');
 
@@ -175,7 +187,7 @@ function getAddressTypes() {
       } catch (e) {
         logger.error('Failed to get address type list. Reason: ', e.message);
       }
-      getPatronGroups();
+      callback();
     });
   }).on('error', (e) => {
     logger.error('Failed to list address types.', e.message);
@@ -186,7 +198,7 @@ function getAddressTypes() {
  * Get patron group list and create a name-id map.
  * Triggers user data processing even if patron groups could not be processed.
  */
-function getPatronGroups() {
+function getPatronGroups(callback) {
   let patronGroupRequest = createRequest('GET', '/groups', 'application/json');
 
   let req = http.get(patronGroupRequest, function (response) {
@@ -221,7 +233,7 @@ function getPatronGroups() {
       } catch (e) {
         logger.error('Failed to retrieve patron groups. Reason: ', e.message);
       }
-      readUserData();
+      callback();
     });
   }).on('error', (e) => {
     logger.error('Failed to list parton groups.', e.message);
@@ -233,14 +245,14 @@ function getPatronGroups() {
  * 
  * Process exits if the file can not be read.
  */
-function readUserData() {
+function readUserData(callback) {
   fs.readFile(folioFilename, function (err, data) {
     if (err || !data) {
       logger.error('Failed to read user data.', err.stack);
       process.exit();
     }
 
-    processUsers(data.toString());
+    callback(data.toString());
   });
 }
 
@@ -433,8 +445,7 @@ function updateUser(user, callback) {
     callback(e);
   });
 
-  req.write(JSON.stringify(user));
-  req.end();
+  req.end(JSON.stringify(user));
 
 }
 
@@ -444,7 +455,7 @@ function updateUser(user, callback) {
  * @param user - the user object to create. If the user id is not specified, the id will be the externalSystemId for now.
  */
 function createUser(user, callback) {
-  user.id = uuidv1();
+  user.id = uuid();
 
   user = mapUserData(user);
 
@@ -497,8 +508,7 @@ function createUser(user, callback) {
     callback(e);
   });
 
-  req.write(JSON.stringify(user));
-  req.end();
+  req.end(JSON.stringify(user));
 }
 
 /**
@@ -546,11 +556,10 @@ function createCredentials(user, callback) {
     callback(e);
   });
 
-  req.write(JSON.stringify({
+  req.end(JSON.stringify({
     'username': user.username,
     'password': ''
   }));
-  req.end();
 
 }
 
@@ -598,11 +607,10 @@ function applyEmptyPermissionSet(user, callback) {
     });
   });
 
-  req.write(JSON.stringify({
+  req.end(JSON.stringify({
     'username': user.username,
     'permissions': []
   }));
-  req.end();
 }
 
 function deleteUser(user, callback) {
@@ -736,4 +744,4 @@ function mapUserData(user) {
 
 module.exports = function (configUrl) {
   return startImport(configUrl);
-}
+};
