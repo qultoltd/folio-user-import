@@ -7,5 +7,6 @@
   "FOLIO_PASSWORD": "admin",
   "FOLIO_FILENAME": "etc/testdata.json",
   "FOLIO_PAGESIZE": "10",
-  "FOLIO_LOGFILE": "logs/user-import.log"
+  "FOLIO_LOGFILE": "logs/user-import.log",
+  "FOLIO_LOGLEVEL": "DEBUG"
 }

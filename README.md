@@ -44,4 +44,4 @@ Run code locally
 5. Query FOLIO if users already exist in the system (in batch of `FOLIO_PAGESIZE` number of users)
 6. Decide by the result of the query if the current user have to be inserted or updated in the system.
 7. Update existing users.
-8. Create non-existing users.
+8. Create non-existing users. Assign empty permission list to user.

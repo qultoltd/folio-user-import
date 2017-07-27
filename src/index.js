@@ -50,6 +50,9 @@ var preferredContactTypes = {
 }
 
 var logger;
+var userCount = 0;
+
+const keepAliveAgent = new http.Agent({ keepAlive: true, maxSockets: 10, keepAliveMsecs: 2000 });
 
 /**
  * Calls config initialization and starts import process with login.
@@ -58,15 +61,20 @@ var logger;
  */
 function startImport(configUrl) {
   initConfig(configUrl);
-  login(function() {
-    getAddressTypes(function() {
-      getPatronGroups(function() {
-        readUserData(function(userData) {
-          processUsers(userData);
+  try {
+    login(function() {
+      getAddressTypes(function() {
+        getPatronGroups(function() {
+          readUserData(function(userData) {
+            processUsers(userData);
+          });
         });
       });
     });
-  });
+  } catch(e) {
+    logger.error('Unhandled error.', e.message);
+    keepAliveAgent.destroy();
+  }
 }
 
 /* Initializes configuration from config file */
@@ -122,7 +130,8 @@ function login(callback) {
       'X-Okapi-Tenant': folioTenant,
       'Content-type': 'application/json',
       'Accept': 'application/json'
-    }
+    },
+    agent: keepAliveAgent
   }
 
   /** Login to FOLIO and save token from response. */
@@ -130,14 +139,15 @@ function login(callback) {
     let loginToken = response.headers['x-okapi-token'];
     if (!loginToken) {
       logger.error('Failed to log in to FOLIO. Exiting.');
-      process.exit();
+      keepAliveAgent.destroy();
+    } else {    
+      authToken = loginToken;
+      logger.debug('Login was successful. Saved login token.');
+      callback();
     }
-    authToken = loginToken;
-    logger.debug('Login was successful. Saved login token.');
-    callback();
   }).on('error', (e) => {
     logger.error('Failed to request log in to FOLIO.', e.message);
-    process.exit();
+    keepAliveAgent.destroy();
   });
 
   req.end(JSON.stringify({
@@ -169,25 +179,27 @@ function getAddressTypes(callback) {
               addressTypes[addressType.addressType] = addressType.id;
             });
             logger.debug('Listed address types successfully.');
+            callback();
             break;
           }
           case 401: {
             logger.error('User is unauthorized. Exiting.', addressResult);
-            process.exit();
+            keepAliveAgent.destroy();
           }
           case 500: {
             logger.error('Internal server error. Exiting.', addressResult);
-            process.exit();
+            keepAliveAgent.destroy();
           }
           default: {
             logger.warn('Failed to list address types.', addressResult);
+            callback();
             break;
           }
         }
       } catch (e) {
         logger.error('Failed to get address type list. Reason: ', e.message);
+        callback();
       }
-      callback();
     });
   }).on('error', (e) => {
     logger.error('Failed to list address types.', e.message);
@@ -215,25 +227,27 @@ function getPatronGroups(callback) {
               patronGroups[group.group] = group.id;
             });
             logger.trace('Listed patron groups successfully.');
+            callback();
             break;
           }
           case 401: {
             logger.error('User is unauthorized. Exiting.', groupResult);
-            process.exit();
+            keepAliveAgent.destroy();
           }
           case 500: {
             logger.error('Internal server error. Exiting.', groupResult);
-            process.exit();
+            keepAliveAgent.destroy();
           }
           default: {
             logger.warn('Failed to list patron groups.', groupResult);
+            callback();
             break;
           }
         }
       } catch (e) {
         logger.error('Failed to retrieve patron groups. Reason: ', e.message);
+        callback();
       }
-      callback();
     });
   }).on('error', (e) => {
     logger.error('Failed to list parton groups.', e.message);
@@ -249,10 +263,10 @@ function readUserData(callback) {
   fs.readFile(folioFilename, function (err, data) {
     if (err || !data) {
       logger.error('Failed to read user data.', err.stack);
-      process.exit();
+      keepAliveAgent.destroy();
+    } else {
+      callback(data.toString());
     }
-
-    callback(data.toString());
   });
 }
 
@@ -270,19 +284,21 @@ function processUsers(usersDataString) {
     while (data.length) {
       userData.push(data.splice(0, folioPageSize));
     }
+
+    async.each(userData, searchUsers, function (err) {
+      if (err) {
+        logger.error('Failed to import all users.', err);
+        keepAliveAgent.destroy();
+      } else {
+        logger.info('Import has finished. See log for failed users.');
+        keepAliveAgent.destroy();
+      }
+    });
+
   } catch (e) {
     logger.error('Failed to parse user data as JSON.', e.message);
-    process.exit();
+    keepAliveAgent.destroy();
   }
-
-  async.eachLimit(userData, 1, searchUsers, function (err) {
-    if (err) {
-      logger.error('Failed to import all users.', err);
-    } else {
-      logger.info('Import has finished. See log for failed users.');
-    }
-  });
-
 }
 
 /**
@@ -408,6 +424,7 @@ function updateUser(user, callback) {
       try {
         switch(response.statusCode) {
           case 204: {
+            logger.info('user update: ', userCount++);
             callback();
             break;
           }
@@ -472,7 +489,8 @@ function createUser(user, callback) {
         switch(response.statusCode) {
           case 201: {
             logger.debug('Created user successfully. Creating credentials.');
-            createCredentials(user, callback);
+            logger.info('user save: ', userCount++);
+            applyEmptyPermissionSet(user, callback);
             break;
           }
           case 401: {
@@ -511,58 +529,6 @@ function createUser(user, callback) {
   req.end(JSON.stringify(user));
 }
 
-/**
- * Add username + empty password for user.
- * 
- * @param user - the saved user - only the username will be used for now
- */
-function createCredentials(user, callback) {
-  let credentialOptions = createRequest('POST', '/authn/credentials', 'text/plain', 'application/json');
-
-  let req = http.request(credentialOptions, function (response) {
-    logger.info('User credentials creation status: ' + user.username, response.statusCode);
-    let credentialCreateResult = '';
-    response.on('data', (chunk) => {
-      credentialCreateResult += chunk;
-    });
-    response.on('end', () => {
-      try {
-        switch(response.statusCode) {
-          case 201: {
-            logger.debug('User credentials created successfully. Adding empty permission set.');
-            applyEmptyPermissionSet(user, callback);
-            break;
-          }
-          case 500: {
-            logger.error('Internal server error.', credentialCreateResult);
-            callback(new Error(credentialCreateResult));
-            break;
-          }
-          default: {
-            logger.warn('Failed to create user credentials for user with name: ' + user.username, credentialCreateResult);
-            //callback(new Error('Failed to create user credentials for user with name: ' + user.username));
-            logger.debug('Deleting user.');
-            deleteUser(callback);
-            break;
-          }
-        }
-      } catch (e) {
-        logger.error('Failed to save credentials for user with name: ' + user.username + ' Reason: ', e.message);
-        callback(e);
-      }
-    });
-  }).on('error', (e) => {
-    logger.error('Failed to add user credentials for user: ' + user.username, e.message);
-    callback(e);
-  });
-
-  req.end(JSON.stringify({
-    'username': user.username,
-    'password': ''
-  }));
-
-}
-
 function applyEmptyPermissionSet(user, callback) {
   let createPermissions = createRequest('POST', '/perms/users', 'text/plain', 'application/json');
 
@@ -588,15 +554,7 @@ function applyEmptyPermissionSet(user, callback) {
           default: {
             logger.warn('Failed to create user permissions for user with name: ' + user.username, permissionCreateResult);
             //callback(new Error('Failed to create user permissions for user with name: ' + user.username));
-            logger.debug('Deleting user with credentials.');
-            removeUserCredentials(user, callback, function(err, user, callback) {
-              if(err) {
-                callback(err);
-              } else {
-                logger.debug('callback: ', callback);
-                deleteUser(user, callback);
-              }
-            });
+            callback();
             break;
           }
         }
@@ -613,78 +571,6 @@ function applyEmptyPermissionSet(user, callback) {
   }));
 }
 
-function deleteUser(user, callback) {
-
-  let deleteOptions = createRequest('DELETE', '/users/' + user.id, 'text/plain');
-
-  let req = http.request(deleteOptions, function (response) {
-    logger.info('User delete status: ' + user.externalSystemId, response.statusCode);
-    let userDeleteResult = '';
-    response.on('data', (chunk) => {
-      userDeleteResult += chunk;
-    });
-    response.on('end', () => {
-      try {
-        switch(response.statusCode) {
-          case 204: {
-            logger.debug('User deleted successfully.');
-            callback();
-            break;
-          }
-          default: {
-            logger.warn('Failed to delete user with externalSystemId: ' + user.externalSystemId, userDeleteResult);
-            callback(new Error('Failed to delete user with externalSystemId: ' + user.externalSystemId));
-            break;
-          }
-        }
-      } catch (e) {
-        logger.error(e.message);
-        callback(e);
-      }
-    });
-  }).on('error', (e) => {
-    logger.error('Failed to delete user with externalSystemId: ' + user.externalSystemId, e.message);
-    callback(e);
-  });
-
-  req.end();
-}
-
-function removeUserCredentials(user, finalCallback, callback) {
-  let credentialOptions = createRequest('DELETE', '/authn/credentials/' + user.username, 'text/plain');
-
-  let req = http.request(credentialOptions, function (response) {
-    logger.info('User credentials deletion status: ' + user.username, response.statusCode);
-    let credentialRemoveResult = '';
-    response.on('data', (chunk) => {
-      credentialRemoveResult += chunk;
-    });
-    response.on('end', () => {
-      try {
-        switch(response.statusCode) {
-          case 204: {
-            logger.debug('User credentials removed successfully.');
-            callback(null, user, finalCallback);
-            break;
-          }
-          default: {
-            logger.warn('Failed to remove user credentials for user with name: ' + user.username, credentialRemoveResult);
-            callback(new Error('Failed to remove user credentials for user with name: ' + user.username));
-            break;
-          }
-        }
-      } catch (e) {
-        logger.error('Failed to remove credentials for user with name: ' + user.username + ' Reason: ', e.message);
-        callback(e);
-      }
-    });
-  }).on('error', (e) => {
-    logger.error('Failed to remove user credentials for user: ' + user.username, e.message);
-    callback(e);
-  });
-
-  req.end();
-}
 
 function createRequest(method, path, accept, contenttype) {
   var request = {
@@ -697,7 +583,8 @@ function createRequest(method, path, accept, contenttype) {
       'X-Okapi-Tenant': folioTenant,
       'Accept': accept,
       'x-okapi-token': authToken
-    }
+    },
+    agent: keepAliveAgent
   }
   if (contenttype) {
     request.headers['Content-type'] = contenttype;
