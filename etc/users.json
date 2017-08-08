@@ -1,14 +1,4 @@
 [{
-    "externalSystemId": "asd",
-    "username": "test",
-    "active": "true"
-  },
-  {
-    "externalSystemId": "bsd",
-    "username": "test_user",
-    "active": "true"
-  },
-  {
     "username": "test_somebody",
     "externalSystemId": "test",
     "barcode": "1657463",
@@ -41,7 +31,7 @@
     "updatedDate": "2000-01-01"
   },
   {
-    "externalSystemId": 14,
+    "externalSystemId": "test_14",
     "personal": {
       "firstName": "Amy",
       "lastName": "Cabble",
@@ -59,7 +49,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 15,
+    "externalSystemId": "test_15",
     "personal": {
       "firstName": "Viola",
       "lastName": "Bramich",
@@ -84,7 +74,7 @@
     "patronGroup": "faculty"
   },
   {
-    "externalSystemId": 16,
+    "externalSystemId": "test_16",
     "personal": {
       "firstName": "Fayette",
       "lastName": "Rubinovici",
@@ -109,7 +99,7 @@
     "patronGroup": "graduate"
   },
   {
-    "externalSystemId": 17,
+    "externalSystemId": "test_17",
     "personal": {
       "firstName": "Laura",
       "lastName": "Habbeshaw",
@@ -134,7 +124,7 @@
     "patronGroup": "faculty"
   },
   {
-    "externalSystemId": 18,
+    "externalSystemId": "test_18",
     "personal": {
       "firstName": "Burt",
       "lastName": "Castaner",
@@ -152,7 +142,7 @@
     "patronGroup": "faculty"
   },
   {
-    "externalSystemId": 19,
+    "externalSystemId": "test_19",
     "personal": {
       "firstName": "Aurea",
       "lastName": "Pinkstone",
@@ -177,7 +167,7 @@
     "patronGroup": "graduate"
   },
   {
-    "externalSystemId": 20,
+    "externalSystemId": "test_20",
     "personal": {
       "firstName": "Melitta",
       "lastName": "Pruvost",
@@ -202,7 +192,7 @@
     "patronGroup": "faculty"
   },
   {
-    "externalSystemId": 21,
+    "externalSystemId": "test_21",
     "personal": {
       "firstName": "Lizabeth",
       "lastName": "Besemer",
@@ -227,7 +217,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 22,
+    "externalSystemId": "test_22",
     "personal": {
       "firstName": "Konstance",
       "lastName": "Tarbett",
@@ -252,7 +242,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 23,
+    "externalSystemId": "test_23",
     "personal": {
       "firstName": "Trish",
       "lastName": "Fossord",
@@ -270,7 +260,7 @@
     "patronGroup": "staff"
   },
   {
-    "externalSystemId": 24,
+    "externalSystemId": "test_24",
     "personal": {
       "firstName": "Katy",
       "lastName": "Rive",
@@ -295,7 +285,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 25,
+    "externalSystemId": "test_25",
     "personal": {
       "firstName": "Gerianne",
       "lastName": "Trevarthen",
@@ -320,7 +310,7 @@
     "patronGroup": "graduate"
   },
   {
-    "externalSystemId": 26,
+    "externalSystemId": "test_26",
     "personal": {
       "firstName": "Lexis",
       "lastName": "Keyson",
@@ -345,7 +335,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 27,
+    "externalSystemId": "test_27",
     "personal": {
       "firstName": "Ammamaria",
       "lastName": "Turfin",
@@ -363,7 +353,7 @@
     "patronGroup": "staff"
   },
   {
-    "externalSystemId": 28,
+    "externalSystemId": "test_28",
     "personal": {
       "firstName": "Junia",
       "lastName": "Korting",
@@ -388,7 +378,7 @@
     "patronGroup": "graduate"
   },
   {
-    "externalSystemId": 29,
+    "externalSystemId": "test_29",
     "personal": {
       "firstName": "Antonetta",
       "lastName": "Shipway",
@@ -413,7 +403,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 30,
+    "externalSystemId": "test_30",
     "personal": {
       "firstName": "Sayers",
       "lastName": "Myrkus",
@@ -438,7 +428,7 @@
     "patronGroup": "staff"
   },
   {
-    "externalSystemId": 31,
+    "externalSystemId": "test_31",
     "personal": {
       "firstName": "Marley",
       "lastName": "Tezure",
@@ -463,7 +453,7 @@
     "patronGroup": "staff"
   },
   {
-    "externalSystemId": 32,
+    "externalSystemId": "test_32",
     "personal": {
       "firstName": "Germaine",
       "lastName": "McAuliffe",
@@ -481,7 +471,7 @@
     "patronGroup": "graduate"
   },
   {
-    "externalSystemId": 33,
+    "externalSystemId": "test_33",
     "personal": {
       "firstName": "Christoforo",
       "lastName": "Lenard",
@@ -506,7 +496,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 34,
+    "externalSystemId": "test_34",
     "personal": {
       "firstName": "Raye",
       "lastName": "Hachard",
@@ -531,7 +521,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 35,
+    "externalSystemId": "test_35",
     "personal": {
       "firstName": "Daryl",
       "lastName": "Stachini",
@@ -556,7 +546,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 36,
+    "externalSystemId": "test_36",
     "personal": {
       "firstName": "Camel",
       "lastName": "Brunnstein",
@@ -574,7 +564,7 @@
     "patronGroup": "faculty"
   },
   {
-    "externalSystemId": 37,
+    "externalSystemId": "test_37",
     "personal": {
       "firstName": "Orsa",
       "lastName": "Cosh",
@@ -599,7 +589,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 38,
+    "externalSystemId": "test_38",
     "personal": {
       "firstName": "Pauline",
       "lastName": "Sedgeman",
@@ -624,7 +614,7 @@
     "patronGroup": "faculty"
   },
   {
-    "externalSystemId": 39,
+    "externalSystemId": "test_39",
     "personal": {
       "firstName": "Robby",
       "lastName": "Haithwaite",
@@ -642,7 +632,7 @@
     "patronGroup": "undergrad"
   },
   {
-    "externalSystemId": 40,
+    "externalSystemId": "test_40",
     "personal": {
       "firstName": "Alessandro",
       "lastName": "McCaw",
@@ -667,7 +657,7 @@
     "patronGroup": "graduate"
   },
   {
-    "externalSystemId": 41,
+    "externalSystemId": "test_41",
     "personal": {
       "firstName": "Rhodie",
       "lastName": "Readie",
@@ -692,7 +682,7 @@
     "patronGroup": "faculty"
   },
   {
-    "externalSystemId": 42,
+    "externalSystemId": "test_42",
     "personal": {
       "firstName": "Phedra",
       "lastName": "Skoyles",

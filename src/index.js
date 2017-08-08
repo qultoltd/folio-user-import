@@ -50,7 +50,6 @@ var preferredContactTypes = {
 }
 
 var logger;
-var userCount = 0;
 
 const keepAliveAgent = new http.Agent({ keepAlive: true, maxSockets: 10, keepAliveMsecs: 2000 });
 
@@ -415,16 +414,15 @@ function updateUser(user, callback) {
   let updateOptions = createRequest('PUT', '/users/' + user.id, 'text/plain', 'application/json');
 
   let req = http.request(updateOptions, function (response) {
-    logger.info('User update status: ' + user.externalSystemId, response.statusCode);
     let userUpdateResult = '';
     response.on('data', (chunk) => {
       userUpdateResult += chunk;
     });
     response.on('end', () => {
+      logger.info('User update status: ' + user.externalSystemId, response.statusCode);
       try {
         switch(response.statusCode) {
           case 204: {
-            logger.info('user update: ', userCount++);
             callback();
             break;
           }
@@ -446,9 +444,7 @@ function updateUser(user, callback) {
           default: {
             logger.warn('Failed to update user with externalSystemId: ' + user.externalSystemId, userUpdateResult);
             logger.debug('User data: ', user);
-            //callback(new Error('Failed to update user with externalSystemId: ' + user.externalSystemId));
-            // This way if one user save fails it won't affect the creation/update of the other users.
-            callback();
+            callback(new Error('Failed to update user with externalSystemId: ' + user.externalSystemId));
             break;
           }
         }
@@ -479,17 +475,16 @@ function createUser(user, callback) {
   let createOptions = createRequest('POST', '/users', 'text/plain', 'application/json');
 
   let req = http.request(createOptions, function (response) {
-    logger.info('User create status: ' + user.externalSystemId, response.statusCode);
     let userCreateResult = '';
     response.on('data', (chunk) => {
       userCreateResult += chunk;
     });
     response.on('end', () => {
+      logger.info('User create status: ' + user.externalSystemId, response.statusCode);
       try {
         switch(response.statusCode) {
           case 201: {
             logger.debug('Created user successfully. Creating credentials.');
-            logger.info('user save: ', userCount++);
             applyEmptyPermissionSet(user, callback);
             break;
           }
@@ -509,10 +504,8 @@ function createUser(user, callback) {
             break;
           }
           default: {
-            logger.warn('Failed to create user with externalSystemId: ' + user.externalSystemId, userCreateResult);
-            //callback(new Error('Failed to create user with externalSystemId: ' + user.externalSystemId));
-            // Do not let the whole batch fail because of one user save failure.
-            callback();
+            logger.warn('Failed to create user with externalSystemId: ' + user.externalSystemId + ' ' + response.statusCode, userCreateResult);
+            callback(new Error('Failed to create user with externalSystemId: ' + user.externalSystemId));
             break;
           }
         }
@@ -533,12 +526,12 @@ function applyEmptyPermissionSet(user, callback) {
   let createPermissions = createRequest('POST', '/perms/users', 'text/plain', 'application/json');
 
   let req = http.request(createPermissions, function (response) {
-    logger.info('User permissions creation status: ' + user.username, response.statusCode);
     let permissionCreateResult = '';
     response.on('data', (chunk) => {
       permissionCreateResult += chunk;
     });
     response.on('end', () => {
+      logger.info('User permissions creation status: ' + user.username, response.statusCode);
       try {
         switch(response.statusCode) {
           case 201: {
